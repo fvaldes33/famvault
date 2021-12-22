@@ -1,0 +1,162 @@
+{
+  "version": "bd1b43e7",
+  "entry": {
+    "module": "/build/entry.client-4U4KQKE5.js",
+    "imports": [
+      "/build/_shared/chunk-3J32TUJV.js",
+      "/build/_shared/chunk-WVNLKHNP.js"
+    ]
+  },
+  "routes": {
+    "root": {
+      "id": "root",
+      "path": "",
+      "module": "/build/root-NA357FQT.js",
+      "imports": [
+        "/build/_shared/chunk-CFSNXHPR.js",
+        "/build/_shared/chunk-CGFUFRKC.js",
+        "/build/_shared/chunk-MPRXXMFQ.js",
+        "/build/_shared/chunk-CRXQPYYD.js",
+        "/build/_shared/chunk-XB5YWTZQ.js",
+        "/build/_shared/chunk-TKXP5KZZ.js",
+        "/build/_shared/chunk-VNHR24PM.js",
+        "/build/_shared/chunk-EDAKMZIP.js"
+      ],
+      "hasAction": false,
+      "hasLoader": true,
+      "hasCatchBoundary": false,
+      "hasErrorBoundary": false
+    },
+    "routes/auth": {
+      "id": "routes/auth",
+      "parentId": "root",
+      "path": "auth",
+      "module": "/build/routes/auth-3VRJEONS.js",
+      "hasAction": true,
+      "hasLoader": false,
+      "hasCatchBoundary": false,
+      "hasErrorBoundary": false
+    },
+    "routes/family/index": {
+      "id": "routes/family/index",
+      "parentId": "root",
+      "path": "family",
+      "index": true,
+      "module": "/build/routes/family/index-UHPSWV42.js",
+      "imports": [
+        "/build/_shared/chunk-225A6XOT.js"
+      ],
+      "hasAction": false,
+      "hasLoader": true,
+      "hasCatchBoundary": false,
+      "hasErrorBoundary": false
+    },
+    "routes/hash": {
+      "id": "routes/hash",
+      "parentId": "root",
+      "path": "hash",
+      "module": "/build/routes/hash-CVCUYA6R.js",
+      "hasAction": true,
+      "hasLoader": false,
+      "hasCatchBoundary": false,
+      "hasErrorBoundary": false
+    },
+    "routes/index": {
+      "id": "routes/index",
+      "parentId": "root",
+      "index": true,
+      "module": "/build/routes/index-F4BTL4JP.js",
+      "imports": [
+        "/build/_shared/chunk-225A6XOT.js"
+      ],
+      "hasAction": false,
+      "hasLoader": true,
+      "hasCatchBoundary": false,
+      "hasErrorBoundary": false
+    },
+    "routes/login": {
+      "id": "routes/login",
+      "parentId": "root",
+      "path": "login",
+      "module": "/build/routes/login-ZAJ2YSIV.js",
+      "imports": [
+        "/build/_shared/chunk-6LB73CSR.js"
+      ],
+      "hasAction": false,
+      "hasLoader": true,
+      "hasCatchBoundary": false,
+      "hasErrorBoundary": false
+    },
+    "routes/onboarding": {
+      "id": "routes/onboarding",
+      "parentId": "root",
+      "path": "onboarding",
+      "module": "/build/routes/onboarding-NK7PVQC2.js",
+      "imports": [
+        "/build/_shared/chunk-6LB73CSR.js"
+      ],
+      "hasAction": true,
+      "hasLoader": true,
+      "hasCatchBoundary": false,
+      "hasErrorBoundary": false
+    },
+    "routes/passwords/$passwordId": {
+      "id": "routes/passwords/$passwordId",
+      "parentId": "root",
+      "path": "passwords/:passwordId",
+      "module": "/build/routes/passwords/$passwordId-HYYIJAR6.js",
+      "imports": [
+        "/build/_shared/chunk-WSDKP2SD.js"
+      ],
+      "hasAction": false,
+      "hasLoader": true,
+      "hasCatchBoundary": false,
+      "hasErrorBoundary": false
+    },
+    "routes/passwords/$passwordId.edit": {
+      "id": "routes/passwords/$passwordId.edit",
+      "parentId": "root",
+      "path": "passwords/:passwordId/edit",
+      "module": "/build/routes/passwords/$passwordId.edit-OND5H6D2.js",
+      "imports": [
+        "/build/_shared/chunk-ABAMG3PI.js",
+        "/build/_shared/chunk-WSDKP2SD.js",
+        "/build/_shared/chunk-225A6XOT.js"
+      ],
+      "hasAction": false,
+      "hasLoader": true,
+      "hasCatchBoundary": false,
+      "hasErrorBoundary": false
+    },
+    "routes/passwords/index": {
+      "id": "routes/passwords/index",
+      "parentId": "root",
+      "path": "passwords",
+      "index": true,
+      "module": "/build/routes/passwords/index-ZL3DLDVV.js",
+      "imports": [
+        "/build/_shared/chunk-WSDKP2SD.js"
+      ],
+      "hasAction": false,
+      "hasLoader": true,
+      "hasCatchBoundary": false,
+      "hasErrorBoundary": false
+    },
+    "routes/passwords/new": {
+      "id": "routes/passwords/new",
+      "parentId": "root",
+      "path": "passwords/new",
+      "module": "/build/routes/passwords/new-ICZOHWQD.js",
+      "imports": [
+        "/build/_shared/chunk-ABAMG3PI.js",
+        "/build/_shared/chunk-WSDKP2SD.js",
+        "/build/_shared/chunk-225A6XOT.js"
+      ],
+      "hasAction": false,
+      "hasLoader": true,
+      "hasCatchBoundary": false,
+      "hasErrorBoundary": false
+    }
+  },
+  "url": "/build/manifest-BD1B43E7.js"
+}

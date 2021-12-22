@@ -2,7 +2,6 @@ import { renderToString } from "react-dom/server";
 import { RemixServer } from "remix";
 import type { EntryContext } from "remix";
 import { ServerStyles, createStylesServer } from '@mantine/ssr';
-import StylesContext from "./StylesContext";
 
 export default function handleRequest(
   request: Request,

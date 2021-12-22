@@ -9,7 +9,6 @@ import {
   redirect,
   Scripts,
   ScrollRestoration,
-  useCatch,
   useLoaderData
 } from "remix";
 import { QueryClientProvider } from 'react-query'
