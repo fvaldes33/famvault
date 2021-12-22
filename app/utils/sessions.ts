@@ -9,7 +9,7 @@ const { getSession, commitSession, destroySession } =
       name: "__famlock",
 
       // all of these are optional
-      domain: "localhost",
+      // domain: process.env.NODE_ENV === "development" ? "localhost" : ".vercel.app",
       // expires: new Date(Date.now() + 60),
       httpOnly: true,
       // maxAge: 60,
