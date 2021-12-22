@@ -1,4 +1,4 @@
-import { AppShell, MantineProvider, ColorSchemeProvider, NormalizeCSS, GlobalStyles, ColorScheme } from '@mantine/core';
+import { AppShell, MantineProvider, ColorSchemeProvider, NormalizeCSS, GlobalStyles, ColorScheme, Global } from '@mantine/core';
 import { NotificationsProvider } from '@mantine/notifications';
 import { NavHeader } from "~/components/NavHeader";
 import { Navbar } from "~/components/Navbar";
@@ -26,7 +26,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <ColorSchemeProvider colorScheme={colorScheme} toggleColorScheme={toggleColorScheme}>
       <MantineProvider theme={{
-        colorScheme, fontFamily: 'Source Code Pro, monospace', headings: {
+        colorScheme,
+        fontFamily: 'Source Code Pro, monospace',
+        headings: {
           fontFamily: 'Source Code Pro, monospace',
           sizes: {
             h1: { fontSize: '5.653rem', lineHeight: 1.3 },
@@ -43,13 +45,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <GlobalStyles />
           {layout === LayoutType.Authenticated && !isOnboarding ? (
             <AppShell
-              // padding="md"
               navbar={<Navbar />}
-              // header={<Header height={60} padding="xs">{/* Header content */}</Header>}
               styles={(theme) => ({
                 root: {
                   paddingLeft: 0,
-                  [`@media (min-width: ${theme.breakpoints.sm}px)`]: {
+                  [`@media (min-width: ${theme.breakpoints.xs}px)`]: {
                     paddingLeft: 80,
                   },
                 },
@@ -57,11 +57,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[8] : 'white',
                   minHeight: '100vh',
                   padding: 0,
+                  width: '100%',
+                  marginBottom: 80,
+                  [`@media (min-width: ${theme.breakpoints.xs}px)`]: {
+                    marginBottom: 0
+                  },
                 },
               })}
             >
               <NavHeader />
               {children}
+
             </AppShell>
           ) : (
             <main>

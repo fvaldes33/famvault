@@ -101,11 +101,14 @@ export function EntryForm({ family, secret }: EntryFormProps) {
   }
 
   return (
-    <div className={classes.wrapper}>
+    <Box className={classes.wrapper} sx={(theme) => ({
+      color: theme.colorScheme === 'dark' ? theme.colors.white : theme.colors.dark[9],
+      fontSize: theme.fontSizes.xs,
+    })}>
       <Form className={classes.form} onSubmit={onSubmit(handleSubmit)}>
         <TextInput
           icon={<PersonIcon />}
-          label={<Text size="xs" transform="uppercase" color="dark">Title</Text>}
+          label={<Text transform="uppercase" inherit>Title</Text>}
           placeholder="Title"
           type="text"
           name="title"
@@ -117,7 +120,7 @@ export function EntryForm({ family, secret }: EntryFormProps) {
         />
         <TextInput
           icon={<PersonIcon />}
-          label={<Text size="xs" transform="uppercase" color="dark">Username</Text>}
+          label={<Text transform="uppercase" inherit>Username</Text>}
           placeholder="Username or email"
           type="text"
           name="username"
@@ -135,7 +138,7 @@ export function EntryForm({ family, secret }: EntryFormProps) {
             target={
               <PasswordInput
                 icon={<LockClosedIcon />}
-                label={<Text size="xs" transform="uppercase" color="dark">Password</Text>}
+                label={<Text transform="uppercase" inherit>Password</Text>}
                 placeholder="********"
                 autoComplete="new-password"
                 autoCapitalize="off"
@@ -154,7 +157,7 @@ export function EntryForm({ family, secret }: EntryFormProps) {
         </Box>
         <TextInput
           icon={<GlobeIcon />}
-          label={<Text size="xs" transform="uppercase" color="dark">Website</Text>}
+          label={<Text transform="uppercase" inherit>Website</Text>}
           placeholder="https://"
           type="text"
           name="website"
@@ -167,6 +170,6 @@ export function EntryForm({ family, secret }: EntryFormProps) {
         <Button loading={makeEntry.isLoading} type="submit" color={'green'}>Save Password</Button>
         {/* {makeEntry.isError && <p>{makeEntry.error}</p>} */}
       </Form>
-    </div>
+    </Box>
   )
 }

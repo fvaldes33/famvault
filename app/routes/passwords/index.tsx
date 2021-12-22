@@ -5,6 +5,7 @@ import PasswordItem from "~/components/PasswordItem";
 import { useSecrets } from "~/api/secrets";
 import { Record, Secret } from "~/types";
 import { PlusIcon } from "@modulz/radix-icons";
+import Hero from "~/components/Hero";
 
 // Loaders provide data to components and are only ever called on the server, so
 // you can connect to a database or run any server side code you want right next
@@ -48,35 +49,17 @@ export default function PasswordsIndexRoute() {
       <Box sx={(theme) => ({
         background: theme.colorScheme === 'dark' ? theme.colors.gray[9] : theme.colors.gray[0]
       })}>
-        <Container size="xl" sx={(theme) => ({
-          position: 'relative',
-          paddingTop: '2rem',
-          paddingBottom: '2rem',
-          [`@media (min-width: ${theme.breakpoints.sm}px)`]: {
-            paddingTop: '4rem',
-            paddingBottom: '4rem',
-          },
-        })}>
-          <Grid justify="space-between" align="center">
-            <Col span={12} md={6}>
-              <Title>Passwords</Title>
-              <Text>A collection of website passwords, password generator and security checks.</Text>
-            </Col>
-            <Col span={12} md={6} sx={(theme) => ({
-              display: 'flex',
-              justifyContent: 'flex-start',
-              [`@media (min-width: ${theme.breakpoints.sm}px)`]: {
-                justifyContent: 'flex-end',
-              },
-            })}>
-              <Link to="/passwords/new">
-                <Button color="green" leftIcon={<PlusIcon />}>
-                  New
-                </Button>
-              </Link>
-            </Col>
-          </Grid>
-        </Container>
+        <Hero
+          heading={`Passwords`}
+          subheading={`A collection of website passwords, password generator and security checks.`}
+          action={
+            <Link to="/passwords/new">
+              <Button color="green" leftIcon={<PlusIcon />}>
+                New
+              </Button>
+            </Link>
+          }
+        />
       </Box>
 
       <Container size="xl" sx={(theme) => ({

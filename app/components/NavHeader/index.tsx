@@ -8,12 +8,32 @@ const useStyles = createStyles(theme => ({
     alignItems: 'center',
     display: 'flex',
     justifyContent: 'flex-start',
+    position: 'sticky',
+    top: 0
   },
   avatar: {
     alignItems: 'center',
     display: 'flex',
     gap: '8px',
     marginLeft: 'auto',
+  },
+  logo: {
+    alignItems: 'center',
+    color: theme.colors.green[4],
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    height: '100%',
+    width: '80px',
+    textDecoration: 'none',
+    [`@media (min-width: ${theme.breakpoints.xs}px)`]: {
+      display: 'none',
+    },
+  },
+  icon: {
+    height: '1.5rem',
+    marginBottom: '0.25rem',
+    width: '1.5rem',
   }
 }));
 
@@ -24,26 +44,10 @@ const NavHeader = () => {
 
   return (
     <Header className={classes.header} height={80} padding="xs">
-      {/* <Menu
-        control={
-          <Button variant="filled" style={{ marginRight: '1rem' }}>
-            <PlusIcon />
-          </Button>
-        }
-      >
-        <Menu.Item
-          component={Link}
-          to="/passwords/new"
-          icon={<LockClosedIcon />}
-          onClick={() => console.log('Hello')}
-        >Password</Menu.Item>
-        <Menu.Item
-          component={Link}
-          to="/files/new"
-          icon={<FileIcon />}
-          onClick={() => console.log('Hello')}
-        >File</Menu.Item>
-      </Menu> */}
+
+      <Link className={classes.logo} to={'/'} title="home">
+        <LockClosedIcon className={classes.icon} />
+      </Link>
 
       <form style={{ width: '100%'}}>
         <TextInput

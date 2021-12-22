@@ -1,5 +1,5 @@
 import { Popover, Button, Box, Slider, Checkbox, Code, Text } from "@mantine/core";
-import { useForm } from "@mantine/hooks";
+import { useForm, useMediaQuery } from "@mantine/hooks";
 import { useEffect, useState } from "react";
 
 const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -14,6 +14,7 @@ export type GeneratorProps = {
 export function Generator({ onChange }: GeneratorProps) {
   const [opened, setOpened] = useState(false);
   const [pass, setPass] = useState('');
+  const matches = useMediaQuery('(min-width: 576px)');
 
   const { getInputProps, values } = useForm({
     initialValues: {
@@ -52,12 +53,15 @@ export function Generator({ onChange }: GeneratorProps) {
         </Button>
       }
       width={260}
-      position="left"
+      position={matches ? 'left' : 'bottom'}
       withArrow
     >
-      <Box>
+      <Box sx={(theme) => ({
+        color: theme.colorScheme === 'dark' ? theme.colors.white : theme.colors.dark[9],
+        fontSize: theme.fontSizes.xs,
+      })}>
         <Box>
-          <Text size="xs" transform="uppercase" color="dark">Length</Text>
+          <Text transform="uppercase" inherit>Length</Text>
           <Slider
             defaultValue={32}
             min={8}
@@ -71,13 +75,13 @@ export function Generator({ onChange }: GeneratorProps) {
         <Box style={{ display: 'flex', gap: '8px', margin: '24px 0' }}>
           <div style={{ width: '50%' }}>
             <Checkbox
-              label={<Text size="xs" transform="uppercase" color="dark">Numbers</Text>}
+              label={<Text transform="uppercase" inherit>Numbers</Text>}
               {...getInputProps('useNumbers', { type: 'checkbox' })}
             />
           </div>
           <div style={{ width: '50%' }}>
             <Checkbox
-              label={<Text size="xs" transform="uppercase" color="dark">Symbols</Text>}
+              label={<Text transform="uppercase" inherit>Symbols</Text>}
               {...getInputProps('useSymbols', { type: 'checkbox' })}
             />
           </div>

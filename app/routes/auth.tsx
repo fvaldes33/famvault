@@ -1,5 +1,5 @@
 import { AuthChangeEvent, Session } from "@supabase/supabase-js";
-import { ActionFunction } from "remix";
+import { ActionFunction, json } from "remix";
 import { clearCookie, createUserSession} from "~/utils/sessions";
 
 
@@ -17,4 +17,6 @@ export const action: ActionFunction = async ({ request }) => {
       return clearCookie(request);
     }
   }
+
+  return json({})
 }

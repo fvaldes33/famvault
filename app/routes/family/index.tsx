@@ -3,6 +3,7 @@ import { PlusIcon } from "@modulz/radix-icons";
 import { MetaFunction, LoaderFunction, Link } from "remix";
 import { json } from "remix";
 import { useFamily } from "~/api/families";
+import Hero from "~/components/Hero";
 
 // Loaders provide data to components and are only ever called on the server, so
 // you can connect to a database or run any server side code you want right next
@@ -43,35 +44,10 @@ export default function Index() {
       <Box sx={(theme) => ({
         background: theme.colorScheme === 'dark' ? theme.colors.gray[9] : theme.colors.gray[0]
       })}>
-        <Container size="xl" sx={(theme) => ({
-          position: 'relative',
-          paddingTop: '2rem',
-          paddingBottom: '2rem',
-          [`@media (min-width: ${theme.breakpoints.sm}px)`]: {
-            paddingTop: '4rem',
-            paddingBottom: '4rem',
-          },
-        })}>
-          <Grid justify="space-between" align="center">
-            <Col span={12} md={6}>
-              <Title>{family!.name}</Title>
-              <Text>Members: {family!.members?.length ?? 1}</Text>
-            </Col>
-            {/* <Col span={12} md={6} sx={(theme) => ({
-              display: 'flex',
-              justifyContent: 'flex-start',
-              [`@media (min-width: ${theme.breakpoints.sm}px)`]: {
-                justifyContent: 'flex-end',
-              },
-            })}>
-              <Link to="/family/new">
-                <Button color="green" leftIcon={<PlusIcon />}>
-                  Invite
-                </Button>
-              </Link>
-            </Col> */}
-          </Grid>
-        </Container>
+        <Hero
+          heading={family!.name}
+          subheading={`Members: ${family!.members?.length ?? 1}`}
+        />
       </Box>
       <Box>
         <Container size="xl" sx={(theme) => ({
