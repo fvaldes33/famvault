@@ -1,7 +1,7 @@
 import { Box, Container, LoadingOverlay, Button, Title, Text, useMantineTheme, Modal } from "@mantine/core";
 import { TrashIcon } from "@modulz/radix-icons";
 import { useState } from "react";
-import { json, Link, LoaderFunction, useCatch, useNavigate, useParams } from "remix";
+import { json, Link, LoaderFunction, useNavigate, useParams } from "remix";
 import { useDeleteSecret, useSecret } from "~/api/secrets";
 import { Clipboardable } from "~/components/Clipboardable";
 
@@ -111,23 +111,23 @@ export default function PasswordRoute() {
   );
 }
 
-export function CatchBoundary() {
-  const params = useParams();
-  const caught = useCatch();
+// export function CatchBoundary() {
+//   const params = useParams();
+//   const caught = useCatch();
 
-  if (caught.status === 404) {
-    return (
-      <div>
-        Huh... Couldn't find an client with the ID of: {params.passwordId}
-      </div>
-    );
-  }
+//   if (caught.status === 404) {
+//     return (
+//       <div>
+//         Huh... Couldn't find an client with the ID of: {params.passwordId}
+//       </div>
+//     );
+//   }
 
-  throw new Error(`Unexpected caught response with status: ${caught.status}`);
-}
+//   throw new Error(`Unexpected caught response with status: ${caught.status}`);
+// }
 
-export function ErrorBoundary({ error }: { error: Error }) {
-  console.error(error);
+// export function ErrorBoundary({ error }: { error: Error }) {
+//   console.error(error);
 
-  return <div>Uh oh. I did a whoopsies</div>;
-}
+//   return <div>Uh oh. I did a whoopsies</div>;
+// }
