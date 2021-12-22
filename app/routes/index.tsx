@@ -1,4 +1,4 @@
-import { LoadingOverlay } from "@mantine/core";
+import { Box, Col, Container, Grid, LoadingOverlay, Title } from "@mantine/core";
 import { MetaFunction, LoaderFunction, redirect, useLocation, useNavigate } from "remix";
 import { useLoaderData, json } from "remix";
 import { useFamily } from "~/api/families";
@@ -59,10 +59,25 @@ export default function Index() {
   }
 
   return (
-    <>
-      <pre>
-        {JSON.stringify({ user, family }, null, 2)}
-      </pre>
-    </>
+    <Box style={{
+      height: '100%',
+    }}>
+      <Container size="xl" sx={(theme) => ({
+        position: 'relative',
+        paddingTop: '2rem',
+        paddingBottom: '2rem',
+        [`@media (min-width: ${theme.breakpoints.sm}px)`]: {
+          paddingTop: '4rem',
+          paddingBottom: '4rem',
+        },
+      })}>
+        <Grid justify="space-between" align="center">
+          <Col span={12}>
+            <Title>Welcome,<br/>{user.user_metadata.fullName}!</Title>
+            <Title order={3}>@todo 🙏🏽</Title>
+          </Col>
+        </Grid>
+      </Container>
+    </Box>
   )
 }

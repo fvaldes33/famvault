@@ -1,8 +1,6 @@
-import { Box, Button, Col, Container, Grid, LoadingOverlay, Title, Text } from "@mantine/core";
-import { PlusIcon } from "@modulz/radix-icons";
-import { MetaFunction, LoaderFunction, Link } from "remix";
+import { Box, Col, Container, Grid, Title } from "@mantine/core";
+import { MetaFunction, LoaderFunction } from "remix";
 import { json } from "remix";
-import { useFamily } from "~/api/families";
 
 // Loaders provide data to components and are only ever called on the server, so
 // you can connect to a database or run any server side code you want right next
@@ -21,23 +19,7 @@ export let meta: MetaFunction = () => {
 };
 
 // https://remix.run/guides/routing#index-routes
-export default function Index() {
-  const { data: family, isLoading, isError, error } = useFamily();
-
-  if (isLoading) {
-    return (
-      <LoadingOverlay visible={true} />
-    )
-  }
-
-  if (isError) {
-    return (
-      <div>
-        Whoops! {error?.message}.
-      </div>
-    )
-  }
-
+export default function SettingsRoute() {
   return (
     <>
       <Box sx={(theme) => ({
@@ -54,8 +36,7 @@ export default function Index() {
         })}>
           <Grid justify="space-between" align="center">
             <Col span={12} md={6}>
-              <Title>{family!.name}</Title>
-              <Text>Members: {family!.members?.length ?? 1}</Text>
+              <Title>Settings</Title>
             </Col>
             {/* <Col span={12} md={6} sx={(theme) => ({
               display: 'flex',
@@ -66,7 +47,7 @@ export default function Index() {
             })}>
               <Link to="/family/new">
                 <Button color="green" leftIcon={<PlusIcon />}>
-                  Invite
+                  Add
                 </Button>
               </Link>
             </Col> */}
