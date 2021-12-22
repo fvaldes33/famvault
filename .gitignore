@@ -3,6 +3,7 @@ node_modules
 .env
 /.cache
 /build
-/public/build
+public/build
+# api/_build
 
 .vercel
