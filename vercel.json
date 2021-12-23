@@ -1,12 +1,7 @@
 {
   "build": {
     "env": {
-      "ENABLE_FILE_SYSTEM_API": "1",
-      "PROJECT_URL": "http://famvault.co",
-      "PUBLIC_SUPABASE_URL": "https://invfsgcucvmuhiwqznpr.supabase.co",
-      "PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYzOTYwMTU3NCwiZXhwIjoxOTU1MTc3NTc0fQ.-GS6fhE_gPfF9E0btAHNXbj0Olm6F8wyGOU69mYYefE",
-      "PRIVATE_SUPABASE_SECRET_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaWF0IjoxNjM5NjAxNTc0LCJleHAiOjE5NTUxNzc1NzR9.Khh55JZPt0sAzGs6ouCMonPDpk9UoYnIg_2owKHUtHc",
-      "CRYPTO_SECRET": "rk4*cgPHdoHFExXNyWJraGv3u_k7eV6aBx7rQJ!YPxr.U2djoE7ejAAmqLgYsk.G"
+      "ENABLE_FILE_SYSTEM_API": "1"
     }
   }
 }
