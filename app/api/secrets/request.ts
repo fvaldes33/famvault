@@ -12,6 +12,18 @@ export const getSecrets = async (): Promise<Secret[]> => {
   return data ?? [];
 }
 
+export const searchSecrets = async (search: string): Promise<Secret[]> => {
+  const { data, error } = await supabase
+    .from<Secret>('secrets')
+    .select('*')
+    .textSearch('title', `${search.replace(' ', ' | ')}`)
+    .order('title');
+
+  if (error) throw error;
+
+  return data ?? [];
+}
+
 export const getSecret = async (uid: string): Promise<Secret | null> => {
   const { data, error } = await supabase
     .from<Secret>('secrets')

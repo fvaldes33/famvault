@@ -1,4 +1,4 @@
-import { AppShell, MantineProvider, ColorSchemeProvider, NormalizeCSS, GlobalStyles, ColorScheme, Global } from '@mantine/core';
+import { AppShell, MantineProvider, ColorSchemeProvider, NormalizeCSS, GlobalStyles, ColorScheme } from '@mantine/core';
 import { NotificationsProvider } from '@mantine/notifications';
 import { NavHeader } from "~/components/NavHeader";
 import { Navbar } from "~/components/Navbar";

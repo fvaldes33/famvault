@@ -1,6 +1,6 @@
 import { Navbar, Text, createStyles } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
-import { ArchiveIcon, DashboardIcon, DotsHorizontalIcon, ExitIcon, GearIcon, LightningBoltIcon, LockClosedIcon } from "@modulz/radix-icons";
+import { ArchiveIcon, DashboardIcon, DotsHorizontalIcon, ExitIcon, GearIcon, LightningBoltIcon, LockClosedIcon, LockOpen1Icon } from "@modulz/radix-icons";
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "remix";
 import { supabase } from "~/utils/supabase";
@@ -68,19 +68,20 @@ const FullNavbar = () => {
         <DashboardIcon className={classes.icon} />
         <Text size="xs">Dashboard</Text>
       </NavLink>
-      <NavLink end className={({isActive}) => isActive ? `${classes.items} ${classes.active}` : classes.items} to={'/passwords'} title="passwords">
-        <DotsHorizontalIcon className={classes.icon} />
+      <NavLink className={({isActive}) => isActive ? `${classes.items} ${classes.active}` : classes.items} to={'/passwords'} title="passwords">
+        {/* <DotsHorizontalIcon className={classes.icon} /> */}
+        <LockOpen1Icon className={classes.icon} />
         <Text size="xs">Passwords</Text>
       </NavLink>
-      <NavLink end className={({isActive}) => isActive ? `${classes.items} ${classes.active}` : classes.items} to={'/files'} title="files">
+      <NavLink className={({isActive}) => isActive ? `${classes.items} ${classes.active}` : classes.items} to={'/files'} title="files">
         <ArchiveIcon className={classes.icon} />
         <Text size="xs">Files</Text>
       </NavLink>
-      <NavLink end className={({isActive}) => isActive ? `${classes.items} ${classes.active}` : classes.items} to={'/family'} title="family">
+      <NavLink className={({isActive}) => isActive ? `${classes.items} ${classes.active}` : classes.items} to={'/family'} title="family">
         <LightningBoltIcon className={classes.icon} />
         <Text size="xs">Family</Text>
       </NavLink>
-      <NavLink end className={({isActive}) => isActive ? `${classes.items} ${classes.active}` : classes.items} to={'/settings'} title="setttings">
+      <NavLink className={({isActive}) => isActive ? `${classes.items} ${classes.active}` : classes.items} to={'/settings'} title="setttings">
         <GearIcon className={classes.icon} />
         <Text size="xs">Settings</Text>
       </NavLink>

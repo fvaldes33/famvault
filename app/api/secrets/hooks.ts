@@ -2,7 +2,7 @@ import { PostgrestError } from "@supabase/supabase-js";
 import { useMutation, useQuery } from "react-query";
 import { Secret } from '~/types';
 import { client } from "~/utils/client";
-import { createSecret, deleteSecret, getSecrets, getSecret } from "./request";
+import { createSecret, deleteSecret, getSecrets, getSecret, searchSecrets } from "./request";
 
 export function useSecrets() {
   return useQuery<Secret[], PostgrestError, Secret[]>(
@@ -22,6 +22,10 @@ export function useSecret(uid: string) {
       }
     }
   )
+}
+
+export function useSearchSecrets() {
+  return useMutation(async (search: string) => await searchSecrets(search));
 }
 
 export function useDeleteSecret() {
