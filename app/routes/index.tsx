@@ -3,6 +3,7 @@ import { ArrowRightIcon } from "@modulz/radix-icons";
 import { MetaFunction, LoaderFunction, redirect, useLocation, useNavigate, Link } from "remix";
 import { useLoaderData, json } from "remix";
 import { useFamily } from "~/api/families";
+import { useProfile } from "~/api/profiles";
 import { useSecrets } from "~/api/secrets";
 import Hero from "~/components/Hero";
 import { getLoggedInUser } from "~/utils/sessions";
@@ -46,6 +47,12 @@ export let meta: MetaFunction = () => {
 export default function Index() {
   const { user } = useLoaderData<any>() || {};
   const {
+    data: profile,
+    isLoading: isLoadingProfile,
+    isError: isErrorProfile,
+    error: errorProfile
+  } = useProfile();
+  const {
     data: family,
     isLoading: isLoadingFamily,
     isError: isErrorFamily,
@@ -77,7 +84,7 @@ export default function Index() {
       minHeight: 'calc(100% - 80px)',
     }}>
       <Hero
-        heading={`Welcome,<br/>${user.user_metadata.fullName}!`}
+        heading={`Welcome,<br/>${profile?.name}!`}
       />
 
       <Container size="xl">

@@ -16,6 +16,12 @@ export enum LayoutType {
 
 export type UnSavedRow<T> = Omit<T, 'id'>;
 
+export type Profile = {
+  id: string;
+  name: string;
+  email: string;
+}
+
 export type OpenGraph = {
   title?: string | null;
   image?: string | null;
