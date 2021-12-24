@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Link } from "remix"
 import { deleteSecret } from "~/api/secrets/request"
 import { Profile } from "~/types"
+import gravatarUrl from "~/utils/helpers"
 
 type FamilyCardProp = Profile & {
   canEdit: boolean;
@@ -25,7 +26,7 @@ export const FamilyCard = ({ admin, name, email, canEdit, onMakeAdmin, onRemoveM
         alignItems: 'center',
         justifyContent: 'space-between'
       })}>
-        <Avatar radius="xl" />
+        <Avatar radius="xl" src={gravatarUrl(email)}/>
         <Box style={{ flex: 1, marginLeft: '1rem' }}>
           <Title order={5}>{name}</Title>
           <Text>{email}</Text>

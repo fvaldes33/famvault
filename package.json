@@ -21,6 +21,7 @@
     "@supabase/supabase-js": "^1.28.5",
     "crypto-js": "^4.1.1",
     "dotenv": "^10.0.0",
+    "js-md5": "^0.7.3",
     "jsdom": "^19.0.0",
     "qs": "^6.7.0",
     "react": "^17.0.2",
@@ -31,6 +32,7 @@
   "devDependencies": {
     "@remix-run/dev": "^1.1.1",
     "@types/crypto-js": "^4.0.2",
+    "@types/js-md5": "^0.4.3",
     "@types/jsdom": "^16.2.13",
     "@types/qs": "^6.9.7",
     "@types/react": "^17.0.24",

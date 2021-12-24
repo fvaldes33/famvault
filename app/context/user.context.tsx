@@ -16,7 +16,7 @@ type UserContextType = {
   session: Session | null;
 };
 
-const UserContext = createContext<UserContextType | undefined>(undefined);
+export const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserContextProvider = ({ children }: { children: ReactChild }) => {
   const [session, setSession] = useState<Session | null>(null);

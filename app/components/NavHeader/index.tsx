@@ -1,11 +1,13 @@
-import { createStyles, Header, TextInput, Switch, useMantineColorScheme, Loader, Box, Popover, Text, ActionIcon } from "@mantine/core";
+import { createStyles, Header, TextInput, Switch, useMantineColorScheme, Loader, Box, Popover, Text, ActionIcon, Avatar } from "@mantine/core";
 import { CheckIcon, ClipboardCopyIcon, LockClosedIcon, MagnifyingGlassIcon, MoonIcon, Share1Icon, SunIcon } from "@modulz/radix-icons";
 import { useClipboard, useDebouncedValue } from '@mantine/hooks';
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link } from "remix";
 import { useSearchSecrets } from "~/api/secrets";
 import { Secret } from "~/types";
 import { useNotifications } from "@mantine/notifications";
+import { UserContext } from "~/context";
+import gravatarUrl from "~/utils/helpers";
 
 const useStyles = createStyles(theme => ({
   header: {
@@ -38,6 +40,12 @@ const useStyles = createStyles(theme => ({
     height: '1.5rem',
     marginBottom: '0.25rem',
     width: '1.5rem',
+  },
+  scheme: {
+    display: 'none',
+    [`@media (min-width: ${theme.breakpoints.xs}px)`]: {
+      display: 'block',
+    },
   }
 }));
 
@@ -48,6 +56,7 @@ const NavHeader = () => {
   const [value, setValue] = useState('');
   const [debounced] = useDebouncedValue(value, 750);
   const { mutate, isLoading, data } = useSearchSecrets();
+  const userContext = useContext(UserContext);
   const dark = colorScheme === 'dark';
 
   useEffect(() => {
@@ -105,6 +114,13 @@ const NavHeader = () => {
         </div>
 
         <div className={classes.avatar}>
+          <div className={classes.scheme}>
+            {dark ? (
+              <MoonIcon style={{ width: 18, height: 18 }} />
+            ) : (
+              <SunIcon style={{ width: 18, height: 18 }} />
+            )}
+          </div>
           <div>
             <Switch
               checked={dark}
@@ -113,16 +129,14 @@ const NavHeader = () => {
               onChange={() => toggleColorScheme()}
             />
           </div>
-          {dark ? (
-            <MoonIcon style={{ width: 18, height: 18 }} />
-            ) : (
-            <SunIcon style={{ width: 18, height: 18 }} />
+          {userContext && userContext.user && (
+            <Link to="/settings">
+              <Avatar
+                radius="xl"
+                src={gravatarUrl(userContext.user.email as string)}
+              />
+            </Link>
           )}
-          {/* <Link to="/profile">
-            <Avatar
-              radius="xl"
-            />
-          </Link> */}
         </div>
       </Header>
     </>
