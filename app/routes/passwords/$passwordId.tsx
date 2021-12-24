@@ -1,12 +1,20 @@
 import { Box, Container, LoadingOverlay, Button, Title, Text, useMantineTheme, Modal } from "@mantine/core";
 import { TrashIcon } from "@modulz/radix-icons";
 import { useState } from "react";
-import { json, Link, LoaderFunction, useNavigate, useParams } from "remix";
+import { json, Link, LoaderFunction, MetaFunction, useNavigate, useParams } from "remix";
 import { useDeleteSecret, useSecret } from "~/api/secrets";
 import { Clipboardable } from "~/components/Clipboardable";
 
 export const loader: LoaderFunction = async ({ params }) => {
   return json({})
+};
+
+// https://remix.run/api/conventions#meta
+export let meta: MetaFunction = () => {
+  return {
+    title: "Passwords | FAMVAULT | Family Password Sharing Tool",
+    description: "A minimalist approach to family password sharing done right."
+  };
 };
 
 export default function PasswordRoute() {

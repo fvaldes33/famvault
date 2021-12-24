@@ -5,6 +5,7 @@ import {
   LiveReload,
   LoaderFunction,
   Meta,
+  MetaFunction,
   Outlet,
   redirect,
   Scripts,
@@ -24,6 +25,14 @@ export let links: LinksFunction = () => {
   return [
     { rel: "stylesheet", href: globalStylesUrl },
   ];
+};
+
+// https://remix.run/api/conventions#meta
+export let meta: MetaFunction = () => {
+  return {
+    title: "F A M V A U L T | Family Password Sharing Tool",
+    description: "A minimalist approach to family password sharing done right."
+  };
 };
 
 const publicPaths = ['/login', '/verify'];

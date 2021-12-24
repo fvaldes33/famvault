@@ -32,9 +32,13 @@ export type OpenGraph = {
 export type Family = {
   id: number;
   name: string;
-  members?: {
-    user_id: string;
-  }[];
+  members: Member[];
+}
+
+export type Member = {
+  user_id: string;
+  profiles: Profile;
+  admin: boolean;
 }
 
 export type Secret = {

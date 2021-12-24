@@ -6,6 +6,7 @@ import { useFamily } from "~/api/families";
 import { useProfile } from "~/api/profiles";
 import { useSecrets } from "~/api/secrets";
 import Hero from "~/components/Hero";
+import { DashboardCard } from "~/components/DashboardCard";
 import { getLoggedInUser } from "~/utils/sessions";
 import { supabase } from "~/utils/supabase";
 
@@ -38,8 +39,8 @@ export let loader: LoaderFunction = async ({ request }) => {
 // https://remix.run/api/conventions#meta
 export let meta: MetaFunction = () => {
   return {
-    title: "Remix Starter",
-    description: "Welcome to remix!"
+    title: "FAMVAULT | Family Password Sharing Tool",
+    description: "A minimalist approach to family password sharing done right."
   };
 };
 
@@ -51,7 +52,7 @@ export default function Index() {
     isLoading: isLoadingProfile,
     isError: isErrorProfile,
     error: errorProfile
-  } = useProfile();
+  } = useProfile(user);
   const {
     data: family,
     isLoading: isLoadingFamily,
@@ -93,7 +94,7 @@ export default function Index() {
             <DashboardCard
               link="/passwords"
               label="Passwords"
-              value={secrets ? secrets.length : undefined}
+              value={secrets ? secrets.length.toString() : `0`}
               isLoading={isLoadingSecrets} />
           </Col>
           <Col span={12} md={6} lg={4}>
@@ -108,32 +109,13 @@ export default function Index() {
             <DashboardCard
               link="/family"
               label="Family"
-              value={family ? family.members?.length : undefined}
+              value={family ? family.members?.length.toString() : `0`}
               isLoading={isLoadingFamily}
             />
           </Col>
         </Grid>
       </Container>
 
-    </Box>
-  )
-}
-
-const DashboardCard = ({ link, label, value, isLoading }: { link: string, label: string, value?: any, isLoading: boolean }) => {
-  return (
-    <Box sx={(theme) => ({
-      background: theme.colorScheme === 'dark' ? theme.colors.gray[9] : theme.colors.gray[0],
-      padding: '2rem',
-      position: 'relative',
-    })}>
-      <LoadingOverlay visible={isLoading} />
-      <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Title order={4}>{label}</Title>
-        <ActionIcon size="lg" color="green" variant="light" component={Link} to={link}>
-          <ArrowRightIcon />
-        </ActionIcon>
-      </Box>
-      {value && (<Title>{value}</Title>)}
     </Box>
   )
 }

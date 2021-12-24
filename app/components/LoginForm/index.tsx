@@ -56,7 +56,7 @@ const LoginForm: React.FC<LoginFormProps> = () => {
       email: '',
     },
     validationRules: {
-      email: (value) => !!value, ///^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value),
+      email: (value) => /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value),
     },
     errorMessages: {
       email: 'Must be a valid email'

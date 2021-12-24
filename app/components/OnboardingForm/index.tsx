@@ -93,7 +93,7 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({
       })
       if (e) throw e;
 
-      const { data: profile, error: p } = await supabase
+      await supabase
         .from('profiles')
         .update({
           name: fullName
@@ -112,7 +112,8 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({
         .from('members')
         .insert([{
           user_id: user.id,
-          family_id: family.id
+          family_id: family.id,
+          admin: true
         }])
         .single();
       if (m) throw m;

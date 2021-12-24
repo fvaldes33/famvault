@@ -18,14 +18,6 @@ export const loader: LoaderFunction = async ({ request }) => {
   return json({});
 }
 
-// https://remix.run/api/conventions#meta
-export const meta: MetaFunction = () => {
-  return {
-    title: "Remix Starter",
-    description: "Welcome to remix!"
-  };
-};
-
 // https://remix.run/guides/routing#index-routes
 export default function Login() {
 

@@ -1,9 +1,7 @@
-import { Box, Container, LoadingOverlay, Title } from "@mantine/core";
-import { MetaFunction, LoaderFunction, useParams } from "remix";
-import { json } from "remix";
-import { EntryForm } from "~/components/EntryForm";
+import { Box, Container, Title } from "@mantine/core";
+import { MetaFunction, LoaderFunction, ActionFunction, json } from "remix";
+import { FamilyForm } from "~/components/FamilyForm";
 import { useFamily } from "~/api/families";
-import { useSecret } from "~/api/secrets";
 
 // Loaders provide data to components and are only ever called on the server, so
 // you can connect to a database or run any server side code you want right next
@@ -13,25 +11,27 @@ export let loader: LoaderFunction = async ({ request }) => {
   return json({});
 }
 
+export let action: ActionFunction = async ({ request }) => {
+  const data = await request.json();
+
+  console.log(data);
+
+  return json({
+    data
+  })
+}
+
 // https://remix.run/api/conventions#meta
 export let meta: MetaFunction = () => {
   return {
-    title: "Passwords | FAMVAULT | Family Password Sharing Tool",
+    title: "Invite | FAMVAULT | Family Password Sharing Tool",
     description: "A minimalist approach to family password sharing done right."
   };
 };
 
 // https://remix.run/guides/routing#index-routes
-export default function PasswordEditRoute() {
-  const { data: family } = useFamily();
-  const params = useParams();
-  const { data: secret, isLoading } = useSecret(params.passwordId ? params.passwordId : '');
-
-  if (isLoading) {
-    return (
-      <LoadingOverlay visible={true} />
-    )
-  }
+export default function FamilyInviteRoute() {
+  const { data: family, isLoading } = useFamily();
 
   return (
     <Container size="sm">
@@ -43,9 +43,11 @@ export default function PasswordEditRoute() {
           [`@media (min-width: ${theme.breakpoints.sm}px)`]: {
             fontSize: '60px',
           },
-        })}>Edit Password</Title>
+        })}>Invite Family Member</Title>
       </Box>
-      <EntryForm family={family!} secret={secret} />
+      {family && (
+        <FamilyForm family={family!} />
+      )}
     </Container>
   )
 }

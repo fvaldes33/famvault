@@ -16,10 +16,10 @@ export const loader: LoaderFunction = async ({ request }) => {
 }
 
 // https://remix.run/api/conventions#meta
-export const meta: MetaFunction = () => {
+export let meta: MetaFunction = () => {
   return {
-    title: "Remix Starter",
-    description: "Welcome to remix!"
+    title: "Passwords | FAMVAULT | Family Password Sharing Tool",
+    description: "A minimalist approach to family password sharing done right."
   };
 };
 
