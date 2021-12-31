@@ -187,7 +187,7 @@ const PopoverSearchItem = ({ secret, setOpened }: { secret: Secret; setOpened: (
 
         <ActionIcon
           onClick={() => {
-            clipboard.copy(secret.website);
+            clipboard.copy(secret.pass);
             notifications.showNotification({
               color: 'green',
               autoClose: 2000,

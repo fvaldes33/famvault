@@ -1,7 +1,8 @@
 import { Box, Text, Title, createStyles, ActionIcon } from "@mantine/core"
 import { useClipboard } from "@mantine/hooks";
 import { useNotifications } from "@mantine/notifications";
-import { CheckIcon, ClipboardCopyIcon, Share1Icon } from "@modulz/radix-icons";
+import { CheckIcon, ClipboardCopyIcon, EyeClosedIcon, EyeOpenIcon, Share1Icon } from "@modulz/radix-icons";
+import { useState } from "react";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -40,14 +41,16 @@ export function Clipboardable({ label, value }: ClipboardableProps) {
   const { classes } = useStyles();
   const clipboard = useClipboard({ timeout: 1000 });
   const notifications = useNotifications();
+  const [showPass, setShowPass] = useState<boolean>(false);
 
   const isLink = value.startsWith('http');
   const isPass = label.toLowerCase() === 'password';
+
   return (
     <Box className={classes.wrapper}>
       <div className={classes.main}>
         <Title order={4}>{label}</Title>
-        <Text>{isPass ? '**********' : value}</Text>
+        <Text>{isPass && !showPass ? '**********' : value}</Text>
       </div>
       <div className={classes.actions}>
         {isLink && (
@@ -61,6 +64,17 @@ export function Clipboardable({ label, value }: ClipboardableProps) {
             size="lg"
           >
             <Share1Icon />
+          </ActionIcon>
+        )}
+
+        {isPass && (
+          <ActionIcon
+            onClick={() => setShowPass(!showPass)}
+            variant="light"
+            color={'green'}
+            size="lg"
+          >
+            {showPass ? (<EyeClosedIcon />) : (<EyeOpenIcon />)}
           </ActionIcon>
         )}
 

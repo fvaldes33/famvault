@@ -1,11 +1,12 @@
-import { Button, Container, Title, Text, Grid, Col, Box, Drawer, LoadingOverlay } from "@mantine/core";
-import { MetaFunction, LoaderFunction, json, useNavigate, useParams, Link } from "remix";
-import { useEffect, useState } from "react";
+import { Button, Container, Grid, Col, Box, LoadingOverlay, TextInput, Loader } from "@mantine/core";
+import { MetaFunction, LoaderFunction, json, Link } from "remix";
+import { useEffect, useRef, useState } from "react";
 import PasswordItem from "~/components/PasswordItem";
-import { useSecrets } from "~/api/secrets";
-import { Record, Secret } from "~/types";
-import { PlusIcon } from "@modulz/radix-icons";
+import { useSearchSecrets, useSecrets } from "~/api/secrets";
+import { Secret } from "~/types";
+import { MagnifyingGlassIcon, PlusIcon } from "@modulz/radix-icons";
 import Hero from "~/components/Hero";
+import { useDebouncedValue } from "@mantine/hooks";
 
 // Loaders provide data to components and are only ever called on the server, so
 // you can connect to a database or run any server side code you want right next
@@ -25,10 +26,20 @@ export let meta: MetaFunction = () => {
 
 // https://remix.run/guides/routing#index-routes
 export default function PasswordsIndexRoute() {
+  const firstUpdate = useRef(true);
+  const [value, setValue] = useState('');
+  const [debounced] = useDebouncedValue(value, 750);
   const { data: secrets, isLoading, isError, error } = useSecrets();
-  const navigate = useNavigate();
-  const params = useParams();
-  const [opened, setOpened] = useState(params && params.passwordId ? true : false);
+  const { mutate, isLoading: searchLoading, data: searchSecrets } = useSearchSecrets();
+
+  useEffect(() => {
+    if (firstUpdate.current) {
+      firstUpdate.current = false;
+      return;
+    }
+
+    mutate(debounced);
+  }, [debounced]);
 
   if (isLoading) {
     return (
@@ -43,6 +54,8 @@ export default function PasswordsIndexRoute() {
       </div>
     )
   }
+
+  const filteredSecrets = searchSecrets && searchSecrets.length > 0 ? searchSecrets : (secrets || []);
 
   return (
     <>
@@ -66,27 +79,28 @@ export default function PasswordsIndexRoute() {
         paddingTop: '2rem',
         paddingBottom: '2rem',
       })}>
+        <Box style={{
+          marginBottom: '1rem'
+        }}>
+          <TextInput
+            type="search"
+            aria-label="Search"
+            placeholder="Search passwords"
+            variant="unstyled"
+            size="md"
+            value={value}
+            onChange={(e) => setValue(e.currentTarget.value)}
+            icon={searchLoading ? (<Loader size="xs" />) : (<MagnifyingGlassIcon />)}
+          />
+        </Box>
         <Grid>
-          {secrets && secrets.map((secret: Secret) => (
+          {filteredSecrets && filteredSecrets.map((secret: Secret) => (
             <Col span={12} md={6} lg={4} key={secret.id}>
               <PasswordItem secret={secret} />
             </Col>
           ))}
         </Grid>
       </Container>
-
-      <Drawer
-        opened={opened}
-        position="right"
-        onClose={() => {
-          setOpened(false);
-          navigate('/passwords')
-        }}
-        padding="xl"
-        size="xl"
-      >
-        drawer
-      </Drawer>
     </>
   )
 }

@@ -13,15 +13,18 @@ export const getSecrets = async (): Promise<Secret[]> => {
 }
 
 export const searchSecrets = async (search: string): Promise<Secret[]> => {
-  const { data, error } = await supabase
-    .from<Secret>('secrets')
-    .select('*')
-    .textSearch('title', `${search.replace(' ', ' | ')}`)
-    .order('title');
+  const res = await fetch('/search', {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      q: search
+    })
+  })
+  const { secrets } = await res.json();
 
-  if (error) throw error;
-
-  return data ?? [];
+  return secrets;
 }
 
 export const getSecret = async (uid: string): Promise<Secret | null> => {
