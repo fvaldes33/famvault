@@ -1,0 +1,374 @@
+import { Box, Button, Col, Container, Grid, Title, Text, Select, Checkbox, Timeline, Progress } from "@mantine/core";
+import { MetaFunction, LoaderFunction, json, useNavigate } from "remix";
+import { useState } from "react";
+import { csvToArray, spliceIntoChunks } from "~/utils/helpers";
+import { ImporterDropzone, Mapper, Missing } from "~/components/Importer";
+import { useFamily } from "~/api/families";
+import { Category, createCategoryBulk, useCategories, useUpdateCategory } from "~/api/categories";
+import { Account, AccountType, createAccountBulk, useAccounts } from "~/api/accounts";
+import { TransactionImportMapKeys, UnSavedRow } from "~/types";
+import { client } from "~/utils/client";
+import { Transaction, useCreateTransactionBulk } from "~/api/transactions";
+import { useNotifications } from "@mantine/notifications";
+
+// Loaders provide data to components and are only ever called on the server, so
+// you can connect to a database or run any server side code you want right next
+// to the component that renders it.
+// https://remix.run/api/conventions#loader
+export let loader: LoaderFunction = async ({ request }) => {
+  return json({});
+}
+
+// https://remix.run/api/conventions#meta
+export let meta: MetaFunction = () => {
+  return {
+    title: "Finance -> Importer | FAMVAULT | Family Password Sharing Tool",
+    description: "A minimalist approach to family password sharing done right."
+  };
+};
+
+export type TransactionImport = {
+  [K in keyof TransactionImportMapKeys]: string;
+}
+
+// https://remix.run/guides/routing#index-routes
+export default function ImporterRoute() {
+  const { data: family } = useFamily();
+  const { data: categories } = useCategories();
+  const { data: accounts } = useAccounts();
+  const notifications = useNotifications();
+  const navigate = useNavigate();
+
+  // const createAccount = useCreateAccount();
+  const updateCategory = useUpdateCategory();
+  const createTransactionBulk = useCreateTransactionBulk();
+
+  const [step, setStep] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [file, setFile] = useState<File>();
+  const [headers, setHeaders] = useState<string[]>();
+  const [data, setData] = useState<{ [key: string]: string }[]>();
+  const [accountMapped, setAccountMapped] = useState<boolean>(false);
+  const [categoriesMapped, setCategoriesMapped] = useState<boolean>(false);
+
+  const [missingAccounts, setMissingAccounts] = useState<string[]>([]);
+  const [missingCategories, setMissingCategories] = useState<string[]>([]);
+  const [importMapping, setImportMapping] = useState<TransactionImport[]>([]);
+  const [importInto, setImportInto] = useState<string>('');
+  const [progress, setProgress] = useState<number>(0);
+
+  const validateAndParseFile = (file: File) => {
+    console.log(file);
+    setLoading(true);
+
+    try {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const { headers, data } = csvToArray(event.target?.result as string);
+        setFile(file);
+        setHeaders(headers);
+        setData(data);
+        setLoading(false);
+        setStep(1);
+      };
+      reader.onerror = () => {
+        notifications.showNotification({
+          color: 'red',
+          autoClose: 2000,
+          title: 'Sorry',
+          message: `Error uploading file`,
+        })
+      }
+      reader.readAsText(file);
+    } catch (error) {
+      setLoading(false);
+    }
+  }
+
+  const setTransactionMapping = (mapping: TransactionImportMapKeys) => {
+    if (!data) {
+      return;
+    }
+
+    const transactions: TransactionImport[] = [];
+    for (const transaction of data) {
+      const mapped = Object.keys(mapping).reduce((acc, key) => {
+        const tkey = mapping[key as keyof TransactionImportMapKeys];
+        return {
+          ...acc,
+          [key]: transaction[tkey]
+        }
+      }, {} as TransactionImport)
+
+      transactions.push(mapped);
+    }
+
+    setImportMapping(transactions);
+
+    if (Object.keys(mapping).includes('account') && mapping.account) {
+      // create unique set of accounts
+      const accountMatches = new Set(transactions.map(m => m.account));
+      const missingAcct = [...accountMatches].filter(a => a && !accounts?.find(c => a.toLowerCase() === c.name.toLowerCase()));
+
+      setMissingAccounts(missingAcct);
+      setAccountMapped(true);
+    }
+
+    if (Object.keys(mapping).includes('category') && mapping.category) {
+      // create unique set of categories
+      const categoryMatches = new Set(transactions.map(m => m.category));
+      const missingCats = [...categoryMatches].filter(a => a && !categories?.find(c => a.toLowerCase() === c.name.toLowerCase()));
+      setMissingCategories(missingCats);
+      setCategoriesMapped(true);
+    } else {
+      // find the cats based on descriptions
+      // @todo
+    }
+
+    setStep(2);
+  }
+
+  const importTransactionsWithExistingAccounts = async () => {
+    // manual map
+    let savedCategories: any = [];
+    if (categoriesMapped && missingCategories) {
+      savedCategories = await createCategoryBulk(missingCategories.map((a) => ({ family_id: family!.id, name: a })))
+    }
+
+    if (categories) {
+      savedCategories = [
+        ...savedCategories,
+        ...categories
+      ];
+    }
+
+    const rows = importMapping.map((row) => ({
+      amount: parseFloat(row.amount),
+      description: row.description ?? "[Missing]",
+      date: row.date,
+      category_id: categoriesMapped ? (savedCategories as Category[]).find(c => c.name === row.category)?.id ?? null : null,
+      account_id: accounts?.find(c => c.name === row.account)?.id,
+    }))
+
+    saveMappedTransactions(rows);
+  }
+
+  const importTransactionsWithNewAccounts = async (accounts: { name: string, type: AccountType }[]) => {
+    // create all account & categories
+    let savedAccounts = await createAccountBulk(accounts.map((a) => ({ family_id: family!.id, ...a })));
+    (savedAccounts as Account[]).concat(accounts as Account[]);
+
+    let savedCategories: any = [];
+    if (categoriesMapped && missingCategories) {
+      savedCategories = await createCategoryBulk(missingCategories.map((a) => ({ family_id: family!.id, name: a })))
+    }
+
+    if (categories) {
+      savedCategories = [
+        ...savedCategories,
+        ...categories
+      ];
+    }
+
+    const transactions: UnSavedRow<Transaction>[] = [];
+
+    for (const row of importMapping) {
+      const transaction = {
+        amount: parseFloat(row.amount),
+        description: row.description ?? "[Missing]",
+        date: row.date,
+        category_id: (savedCategories as Category[]).find(c => c.name === row.category)?.id ?? null,
+        account_id: savedAccounts?.find(a => a.name === row.account)?.id
+      };
+      transactions.push(transaction);
+    }
+
+    saveMappedTransactions(transactions);
+  }
+
+  const importTransactionsWithoutAccounts = async () => {
+    // manual map
+    let savedCategories: any = [];
+    if (categoriesMapped && missingCategories) {
+      savedCategories = await createCategoryBulk(missingCategories.map((a) => ({ family_id: family!.id, name: a })))
+    }
+
+    if (categories) {
+      savedCategories = [
+        ...savedCategories,
+        ...categories
+      ];
+    }
+
+    const rows = importMapping.map((row) => ({
+      amount: parseFloat(row.amount),
+      description: row.description ?? "[Missing]",
+      date: row.date,
+      category_id: categoriesMapped ? (savedCategories as Category[]).find(c => c.name === row.category)?.id ?? null : null,
+      account_id: +importInto
+    }))
+
+    saveMappedTransactions(rows);
+  }
+
+  const saveMappedTransactions = (rows: UnSavedRow<Transaction>[]) => {
+    console.log('saveMappedTransactions', rows);
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(interval)
+          return prev;
+        }
+        return prev + 10;
+      })
+    }, 100);
+
+    // hydrate cats if needed
+    let transactions = rows;
+    if (!categoriesMapped) {
+      transactions = rows.map((row) => {
+        if (!row.category_id) {
+          const cat = categories?.find(c => c.match_rules?.includes(row.description));
+          if (cat) {
+            return {
+              ...row,
+              category_id: cat.id
+            }
+          }
+
+          return {
+            ...row
+          }
+        }
+
+        return {
+          ...row
+        }
+      })
+    }
+
+    function mutate(transactions: UnSavedRow<Transaction>[], isLast: boolean = false) {
+      createTransactionBulk.mutate(transactions, {
+        onSuccess: async (data) => {
+          saveMatchRules(data!);
+
+          if (isLast) {
+            await client.invalidateQueries(['get-transactions']);
+            setProgress(100);
+            completeImport();
+          }
+        },
+        onError: (err) => {
+          console.log('err', err)
+        }
+      })
+    }
+
+    if (transactions.length >= 1000) {
+      // chunk it
+      const chunks = spliceIntoChunks<UnSavedRow<Transaction>>(transactions, 1000);
+      chunks.forEach((chunk, index) => mutate(chunk, index === (chunks.length - 1) ? true : false));
+    } else {
+      mutate(transactions, true)
+    }
+  }
+
+  const completeImport = () => {
+    notifications.showNotification({
+      color: 'green',
+      autoClose: 2000,
+      title: 'Complete',
+      message: `Your transactions have been imported`,
+      onClose: () => {
+        if (!categoriesMapped) {
+          navigate('/finance/transactions?category=uncategorized')
+        } else {
+          navigate('/finance/transactions')
+        }
+      }
+    })
+  }
+
+  /**
+   * @todo batch this
+   */
+  const saveMatchRules = async (rows: Transaction[]) => {
+    for (const row of rows) {
+      const { category_id } = row;
+
+      if (!category_id) {
+        continue;
+      }
+
+      const cat = categories?.find(c => c.id === category_id);
+      if (!cat) {
+        continue;
+      }
+
+      const match_rules = cat.match_rules ?? [];
+      match_rules.push(row.description);
+
+      await updateCategory.mutateAsync({
+        ...cat,
+        match_rules: [...(new Set(match_rules))]
+      })
+    }
+  }
+
+  return (
+    <Box style={{ padding: '40px 0'}}>
+      <Container size="sm">
+        <Timeline active={step} bulletSize={24} lineWidth={2}>
+          <Timeline.Item title="Upload CSV File">
+            <ImporterDropzone
+              loading={loading}
+              onDrop={(files) => validateAndParseFile(files[0])}
+              onReject={(files) => console.log('rejected files', files)}
+              afterParse={file && (
+                <div>
+                  <Text size="xl" inline>
+                    {file.name}
+                  </Text>
+                  <Text size="sm" color="dimmed" inline mt={7}>
+                    Transaction file contains {data?.length} rows;
+                  </Text>
+                </div>
+              )}
+            />
+          </Timeline.Item>
+          <Timeline.Item title="Match Columns">
+            <Text color="dimmed" size="sm">To properly import the data we need you to match each of the fields below with the corresponding columns from your CSV.</Text>
+            {headers && headers.length > 0 && (
+              <Mapper headers={headers} onNext={setTransactionMapping} />
+            )}
+          </Timeline.Item>
+          <Timeline.Item title="Configure Accounts">
+            <Text color="dimmed" size="sm">If your file contains an "Account" column and includes accounts you have not already created, you can do so here. If not, choose an account to import these transactions into.</Text>
+            {missingAccounts && missingAccounts.length > 0 && (
+              <Missing accounts={missingAccounts} onNext={importTransactionsWithNewAccounts} />
+            )}
+            {step === 2 && !accountMapped && (
+              <Box style={{ margin: '1rem 0'}}>
+                <Select
+                  style={{ margin: '0.5rem 0' }}
+                  aria-label="Account"
+                  placeholder="Choose Account"
+                  data={(accounts || []).map((account) => ({ value: `${account.id}`, label: account.name }))}
+                  onChange={(val: string) => setImportInto(val)}
+                />
+                <Button color="green" onClick={() => importTransactionsWithoutAccounts()}>Start Import</Button>
+              </Box>
+            )}
+            {step === 2 && accountMapped && !missingAccounts.length && (
+              <Button color="green" onClick={() => importTransactionsWithExistingAccounts()}>Start Import</Button>
+            )}
+          </Timeline.Item>
+          <Timeline.Item title="Upload">
+            <Text color="dimmed" size="sm">Imports over 100 rows, we take time. Progress will be shown below.</Text>
+            <Progress value={progress} style={{ margin: '1rem 0' }}/>
+          </Timeline.Item>
+        </Timeline>
+      </Container>
+    </Box>
+  )
+}

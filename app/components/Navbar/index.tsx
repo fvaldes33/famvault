@@ -73,9 +73,9 @@ const FullNavbar = () => {
         <LockOpen1Icon className={classes.icon} />
         <Text size="xs">Passwords</Text>
       </NavLink>
-      <NavLink className={({isActive}) => isActive ? `${classes.items} ${classes.active}` : classes.items} to={'/files'} title="files">
+      <NavLink className={({ isActive }) => isActive ? `${classes.items} ${classes.active}` : classes.items} to={'/finance'} title="finance">
         <ArchiveIcon className={classes.icon} />
-        <Text size="xs">Files</Text>
+        <Text size="xs">Finance</Text>
       </NavLink>
       <NavLink className={({isActive}) => isActive ? `${classes.items} ${classes.active}` : classes.items} to={'/family'} title="family">
         <LightningBoltIcon className={classes.icon} />

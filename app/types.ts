@@ -14,6 +14,19 @@ export enum LayoutType {
   Anonymous = 'anonymous'
 }
 
+export type Sort<T> = {
+  column: keyof T;
+  ascending: boolean;
+}
+
+export type TransactionImportMapKeys = {
+  account: string;
+  category: string;
+  description: string;
+  amount: string;
+  date: string;
+}
+
 export type UnSavedRow<T> = Omit<T, 'id'>;
 
 export type Profile = {
