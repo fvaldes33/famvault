@@ -1,7 +1,7 @@
 import { PostgrestError } from "@supabase/supabase-js";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { UnSavedRow } from "~/types";
-import { getAccount, getAccounts, createAccount, deleteAccount } from "./request";
+import { getAccount, getAccounts, createAccount, createAccountBulk, deleteAccount } from "./request";
 import { Account } from "./types";
 
 export function useAccounts() {
@@ -20,6 +20,17 @@ export function useAccount(uid: string) {
 
 export function useCreateAccount() {
   return useMutation((account: Account | UnSavedRow<Account>) => createAccount({ ...account }));
+}
+export function useCreateAccountBulk() {
+  const queryClient = useQueryClient();
+  return useMutation(
+    (accounts: UnSavedRow<Account>[]) => createAccountBulk(accounts),
+    {
+      onSuccess: async () => {
+        await queryClient.invalidateQueries(['get-acounts'])
+      }
+    }
+  );
 }
 
 export function useDeleteAccount() {

@@ -1,15 +1,20 @@
 import { Box, Button, TextInput, Card, Container, Group, Select, Title, Loader } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
+import { DateRangePicker } from '@mantine/dates';
 import { MagnifyingGlassIcon } from "@modulz/radix-icons";
 import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import { MetaFunction, LoaderFunction, Link, useLocation, json } from "remix";
+import dayjs from "dayjs";
+import objectSupport from "dayjs/plugin/objectSupport";
 import { useAccounts } from "~/api/accounts";
 import { useCategories } from "~/api/categories";
-import { getTransactions, Transaction, useUpdateTransaction } from "~/api/transactions";
+import { getTransactions, getTransactionsCount, Transaction, useUpdateTransaction } from "~/api/transactions";
 import { EditableTable } from "~/components/EditableTable";
 import { Sort } from "~/types";
 import { formatCurrency, uncategorizedCategory } from "~/utils/helpers";
+
+dayjs.extend(objectSupport);
 
 // Loaders provide data to components and are only ever called on the server, so
 // you can connect to a database or run any server side code you want right next
@@ -32,16 +37,28 @@ type TransactionQueryKeys = {
   sort?: string;
   category?: string;
   account?: string;
-  term?: string
+  term?: string;
+  page?: number;
+  dates?: [Date | null, Date | null]
 };
 
-const queryKeys = ({ ascending, sort, category, account, term }: TransactionQueryKeys): string[] => {
-  const keys = ['get-transactions'];
+type TransactionFilters = {
+  category: string | undefined;
+  account: string | undefined;
+  term: string;
+  page: number;
+  dates?: [Date | null, Date | null]
+}
+
+const queryKeys = (prefix: string, { ascending, sort, category, account, term, page, dates }: TransactionQueryKeys): string[] => {
+  const keys = [`get-${prefix}`];
   if (ascending) keys.push(ascending ? 'ascending' : 'descending');
   if (sort) keys.push(sort);
   if (category) keys.push(category);
   if (account) keys.push(account);
   if (term) keys.push(term);
+  if (page) keys.push(`${page}`);
+  if (dates) keys.push(...dates.filter(d => !!d).map(d => d!.toString()))
 
   return keys;
 }
@@ -53,9 +70,14 @@ export default function TransactionsRoute() {
   const categoryId = qs.has('category') ? qs.get('category') as string : undefined;
 
   const [sort, setSort] = useState<Sort<Transaction>>({ column: 'date', ascending: false });
-  const [filters, setFilters] = useState<{ category: string | undefined; account: string | undefined; term: string}>({
+  const [filters, setFilters] = useState<TransactionFilters>({
     category: categoryId ?? undefined,
     account: undefined,
+    page: 1,
+    dates: [
+      null,
+      null
+    ],
     term: ''
   });
 
@@ -67,21 +89,34 @@ export default function TransactionsRoute() {
   const { data: accounts } = useAccounts();
 
   const { data: transactions, isLoading } = useQuery(
-    queryKeys({ ...sort, ...filters }),
+    queryKeys('transactions', { ...sort, ...filters }),
     () => getTransactions({
-      limit: 100,
+      limit: 50,
       sort,
       categoryId: filters.category,
       accountId: filters.account,
-      term: debounced
+      page: filters.page,
+      term: debounced,
+      dates: filters.dates
     }),
   );
+  const { data: count } = useQuery(
+    queryKeys('transactions-count', { ...sort, ...filters }),
+    () => getTransactionsCount({
+      categoryId: filters.category,
+      accountId: filters.account,
+      page: filters.page,
+      term: debounced,
+      dates: filters.dates
+    })
+  )
 
   const resetFilters = () => {
     setFilters({
       category: undefined,
       account: undefined,
-      term: ''
+      term: '',
+      page: 1,
     })
     setValue('');
   }
@@ -111,7 +146,7 @@ export default function TransactionsRoute() {
         </Box>
 
         <Card style={{ marginBottom: '1rem' }}>
-          <Group position="apart">
+          <Group style={{ marginBottom: '1rem' }}>
             <TextInput
               type="search"
               aria-label="Search"
@@ -122,8 +157,18 @@ export default function TransactionsRoute() {
               onChange={(e) => setValue(e.currentTarget.value)}
               icon={isLoading ? (<Loader size="xs" />) : (<MagnifyingGlassIcon />)}
             />
-
+          </Group>
+          <Group position="apart">
             <Group>
+              <DateRangePicker
+                aria-label="Pick dates range"
+                placeholder="Pick dates range"
+                color="green"
+                firstDayOfWeek="sunday"
+                value={filters.dates}
+                onChange={([start, end]) => setFilters((prev) => ({ ...prev, dates: [start, end]}))}
+              />
+
               <Select
                 aria-label="Accounts"
                 placeholder="Accounts"
@@ -154,6 +199,8 @@ export default function TransactionsRoute() {
                   }
                 }}
               />
+            </Group>
+            <Group>
               <Button variant="light" color="green" onClick={() => {
                 resetFilters();
               }}>
@@ -173,6 +220,10 @@ export default function TransactionsRoute() {
               { label: 'Date', key: 'date', sortable: true, sortFn: setSort },
             ]}
             data={transactions ?? []}
+            paginateProps={{
+              total: count ? Math.floor(count / 100) : 0,
+              onPaginate: (page: number) => setFilters((prev) => ({ ...prev, page }))
+            }}
             renderRow={({ category, account, ...transaction }) => (
               <tr key={transaction.id}>
                 <td>{transaction.description}</td>

@@ -1,7 +1,6 @@
 export type Category = {
-  id: number|string;
+  id: number;
   family_id: number;
   name: string;
-  description?: string;
   match_rules?: string[];
 }

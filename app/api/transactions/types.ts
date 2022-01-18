@@ -20,4 +20,6 @@ export type TransactionsRequestParams = {
   limit?: number;
   sort?: Sort<Transaction>;
   term?: string;
+  page?: number;
+  dates?: [Date | null, Date | null];
 }
