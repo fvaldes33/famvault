@@ -23,3 +23,21 @@ export type TransactionsRequestParams = {
   page?: number;
   dates?: [Date | null, Date | null];
 }
+
+export type TransactionQueryKeys = {
+  ascending?: boolean;
+  sort?: string;
+  category?: string;
+  account?: string;
+  term?: string;
+  page?: number;
+  dates?: [Date | null, Date | null]
+};
+
+export type TransactionFilters = {
+  category: string | undefined;
+  account: string | undefined;
+  term: string;
+  page: number;
+  dates?: [Date | null, Date | null]
+}

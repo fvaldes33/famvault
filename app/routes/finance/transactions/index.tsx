@@ -1,18 +1,19 @@
-import { Box, Button, TextInput, Card, Container, Group, Select, Title, Loader } from "@mantine/core";
+import { Box, Button, Text, TextInput, Card, Container, Group, Select, Title, Loader } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 import { DateRangePicker } from '@mantine/dates';
 import { MagnifyingGlassIcon } from "@modulz/radix-icons";
-import { useEffect, useState } from "react";
-import { useQuery } from "react-query";
+import { useState } from "react";
 import { MetaFunction, LoaderFunction, Link, useLocation, json } from "remix";
 import dayjs from "dayjs";
 import objectSupport from "dayjs/plugin/objectSupport";
+
 import { useAccounts } from "~/api/accounts";
 import { useCategories } from "~/api/categories";
-import { getTransactions, getTransactionsCount, Transaction, useUpdateTransaction } from "~/api/transactions";
+import { Transaction, useFilteredTransactions, useFilteredTransactionsCount } from "~/api/transactions";
 import { EditableTable } from "~/components/EditableTable";
 import { Sort } from "~/types";
 import { formatCurrency, uncategorizedCategory } from "~/utils/helpers";
+import { CategorySelector } from "~/components/CategorySelector";
 
 dayjs.extend(objectSupport);
 
@@ -69,6 +70,8 @@ export default function TransactionsRoute() {
   const qs = new URLSearchParams(search);
   const categoryId = qs.has('category') ? qs.get('category') as string : undefined;
 
+  // filters
+  // const [value, setValue] = useState('');
   const [sort, setSort] = useState<Sort<Transaction>>({ column: 'date', ascending: false });
   const [filters, setFilters] = useState<TransactionFilters>({
     category: categoryId ?? undefined,
@@ -80,36 +83,20 @@ export default function TransactionsRoute() {
     ],
     term: ''
   });
+  const [debouncedFilters] = useDebouncedValue(filters, 500, { leading: true });
 
-  const [value, setValue] = useState('');
-  const [debounced] = useDebouncedValue(value, 500, { leading: true });
-
-  const updateTransaction = useUpdateTransaction();
   const { data: categories } = useCategories();
   const { data: accounts } = useAccounts();
 
-  const { data: transactions, isLoading } = useQuery(
-    queryKeys('transactions', { ...sort, ...filters }),
-    () => getTransactions({
-      limit: 50,
-      sort,
-      categoryId: filters.category,
-      accountId: filters.account,
-      page: filters.page,
-      term: debounced,
-      dates: filters.dates
-    }),
-  );
-  const { data: count } = useQuery(
-    queryKeys('transactions-count', { ...sort, ...filters }),
-    () => getTransactionsCount({
-      categoryId: filters.category,
-      accountId: filters.account,
-      page: filters.page,
-      term: debounced,
-      dates: filters.dates
-    })
-  )
+  const { data: transactions, isLoading } = useFilteredTransactions({
+    sort,
+    filters: debouncedFilters,
+  })
+
+  const { data: count } = useFilteredTransactionsCount({
+    sort,
+    filters: debouncedFilters,
+  })
 
   const resetFilters = () => {
     setFilters({
@@ -117,16 +104,9 @@ export default function TransactionsRoute() {
       account: undefined,
       term: '',
       page: 1,
+      dates: [null, null]
     })
-    setValue('');
   }
-
-  useEffect(() => {
-    setFilters((prev) => ({
-      ...prev,
-      term: debounced
-    }))
-  }, [debounced])
 
   return (
     <>
@@ -153,8 +133,11 @@ export default function TransactionsRoute() {
               placeholder="Search transactions"
               variant="unstyled"
               size="md"
-              value={value}
-              onChange={(e) => setValue(e.currentTarget.value)}
+              value={filters.term}
+              onChange={(e) => setFilters((prev) => ({
+                ...prev,
+                term: e.target.value
+              }))}
               icon={isLoading ? (<Loader size="xs" />) : (<MagnifyingGlassIcon />)}
             />
           </Group>
@@ -199,6 +182,7 @@ export default function TransactionsRoute() {
                   }
                 }}
               />
+              <Text>Showing {(count ?? 0) > 50 ? 50 : count} of {count}</Text>
             </Group>
             <Group>
               <Button variant="light" color="green" onClick={() => {
@@ -221,7 +205,7 @@ export default function TransactionsRoute() {
             ]}
             data={transactions ?? []}
             paginateProps={{
-              total: count ? Math.floor(count / 100) : 0,
+              total: count ? Math.ceil(count / 50) : 0,
               onPaginate: (page: number) => setFilters((prev) => ({ ...prev, page }))
             }}
             renderRow={({ category, account, ...transaction }) => (
@@ -229,19 +213,10 @@ export default function TransactionsRoute() {
                 <td>{transaction.description}</td>
                 <td>{account?.name}</td>
                 <td>
-                  <Select
-                    aria-label="Category"
-                    data={(categories||[]).map((cat) => ({ label: cat.name, value: cat.id.toString() }))}
-                    defaultValue={category?.id.toString()}
-                    onChange={(newId) => {
-                      //prompt
-                      if (newId) {
-                        updateTransaction.mutate({
-                          ...transaction,
-                          category_id: +newId
-                        })
-                      }
-                    }}
+                  <CategorySelector
+                    transaction={transaction}
+                    category={category}
+                    categories={categories}
                   />
                 </td>
                 <td>{formatCurrency(transaction.amount)}</td>
