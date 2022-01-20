@@ -75,7 +75,7 @@ export default function AccountsRoute() {
 
       <Container size="xl">
         <Grid>
-          <Col span={6}>
+          <Col span={12} md={6}>
             <Card>
               <Card.Section>
                 <Box sx={{ borderRadius: '4px', margin: '0.5rem', padding: '1rem', border: '1px solid #eee' }}>
@@ -108,7 +108,7 @@ export default function AccountsRoute() {
               </Card.Section>
             </Card>
           </Col>
-          <Col span={6}>
+          <Col span={12} md={6}>
             <Card>
               <Card.Section>
                 <Box sx={{ borderRadius: '4px', margin: '0.5rem', padding: '1rem', border: '1px solid #eee' }}>

@@ -194,7 +194,7 @@ export default function TransactionsRoute() {
           </Group>
         </Card>
 
-        <Box>
+        <Box style={{ overflowX: 'auto' }}>
           <EditableTable<Transaction>
             headers={[
               { label: 'Description', key: 'description', sortable: true, sortFn: setSort },

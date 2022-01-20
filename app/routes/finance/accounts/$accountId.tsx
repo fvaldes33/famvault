@@ -109,7 +109,7 @@ export default function AccountDetailRoute() {
             Import
           </Button>
         </Box>
-        <Box>
+        <Box style={{ overflowX: 'auto' }}>
           <EditableTable<Transaction>
             headers={[
               { label: 'Description', key: 'description', sortable: true, sortFn: setSort },
