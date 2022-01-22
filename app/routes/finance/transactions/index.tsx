@@ -1,19 +1,17 @@
-import { Box, Button, Text, TextInput, Card, Container, Group, Select, Title, Loader } from "@mantine/core";
-import { useDebouncedValue } from "@mantine/hooks";
-import { DateRangePicker } from '@mantine/dates';
-import { MagnifyingGlassIcon } from "@modulz/radix-icons";
-import { useState } from "react";
+import { Box, Button, Text, Modal, Container, Group, Title, Divider, Menu } from "@mantine/core";
+import { Cross1Icon, GearIcon, TrashIcon } from "@modulz/radix-icons";
 import { MetaFunction, LoaderFunction, Link, useLocation, json } from "remix";
+import { useState } from "react";
 import dayjs from "dayjs";
 import objectSupport from "dayjs/plugin/objectSupport";
 
-import { useAccounts } from "~/api/accounts";
-import { useCategories } from "~/api/categories";
-import { Transaction, useFilteredTransactions, useFilteredTransactionsCount } from "~/api/transactions";
+import { Transaction, getTransactions, useCreateTransactionBulk, useDeleteTransaction, useUpdateTransaction } from "~/api/transactions";
 import { EditableTable } from "~/components/EditableTable";
-import { Sort } from "~/types";
-import { formatCurrency, uncategorizedCategory } from "~/utils/helpers";
+import { formatCurrency} from "~/utils/helpers";
 import { CategorySelector } from "~/components/CategorySelector";
+import { useTransactionFilters } from "~/utils/useTransactionFilters";
+import TransactionFilters from "~/components/TransactionFilters";
+import { useQueryClient } from "react-query";
 
 dayjs.extend(objectSupport);
 
@@ -33,78 +31,81 @@ export let meta: MetaFunction = () => {
   };
 };
 
-type TransactionQueryKeys = {
-  ascending?: boolean;
-  sort?: string;
-  category?: string;
-  account?: string;
-  term?: string;
-  page?: number;
-  dates?: [Date | null, Date | null]
-};
-
-type TransactionFilters = {
-  category: string | undefined;
-  account: string | undefined;
-  term: string;
-  page: number;
-  dates?: [Date | null, Date | null]
-}
-
-const queryKeys = (prefix: string, { ascending, sort, category, account, term, page, dates }: TransactionQueryKeys): string[] => {
-  const keys = [`get-${prefix}`];
-  if (ascending) keys.push(ascending ? 'ascending' : 'descending');
-  if (sort) keys.push(sort);
-  if (category) keys.push(category);
-  if (account) keys.push(account);
-  if (term) keys.push(term);
-  if (page) keys.push(`${page}`);
-  if (dates) keys.push(...dates.filter(d => !!d).map(d => d!.toString()))
-
-  return keys;
-}
-
 // https://remix.run/guides/routing#index-routes
 export default function TransactionsRoute() {
   const { search } = useLocation();
+  const [updater, setUpdater] = useState<{ open: boolean; transaction?: Transaction }>({
+    open: false
+  });
   const qs = new URLSearchParams(search);
   const categoryId = qs.has('category') ? qs.get('category') as string : undefined;
 
-  // filters
-  // const [value, setValue] = useState('');
-  const [sort, setSort] = useState<Sort<Transaction>>({ column: 'date', ascending: false });
-  const [filters, setFilters] = useState<TransactionFilters>({
-    category: categoryId ?? undefined,
-    account: undefined,
-    page: 1,
-    dates: [
-      null,
-      null
-    ],
-    term: ''
+  const queryClient = useQueryClient();
+  const updateTransaction = useUpdateTransaction();
+  const updateTransactionBulk = useCreateTransactionBulk();
+  const deleteTransaction = useDeleteTransaction();
+
+  const {
+    accounts,
+    categories,
+    filters,
+    transactions,
+    count,
+    loading,
+    setSort,
+    setFilters,
+    resetFilters
+  } = useTransactionFilters({
+    initialFilters: {
+      category: categoryId ?? undefined,
+    }
   });
-  const [debouncedFilters] = useDebouncedValue(filters, 500, { leading: true });
 
-  const { data: categories } = useCategories();
-  const { data: accounts } = useAccounts();
+  const updateSingleTransaction = () => {
+    const { transaction } = updater;
+    if (!transaction) {
+      return;
+    }
 
-  const { data: transactions, isLoading } = useFilteredTransactions({
-    sort,
-    filters: debouncedFilters,
-  })
+    updateTransaction.mutate({
+      ...transaction,
+      excludeFromTotals: !transaction.excludeFromTotals
+    }, {
+      onSuccess: () => {
+        setUpdater({ open: false, transaction: undefined });
+      }
+    })
+  }
 
-  const { data: count } = useFilteredTransactionsCount({
-    sort,
-    filters: debouncedFilters,
-  })
+  const updateAllTransactions = async () => {
+    const { transaction } = updater;
+    if (!transaction) {
+      return;
+    }
 
-  const resetFilters = () => {
-    setFilters({
-      category: undefined,
-      account: undefined,
-      term: '',
-      page: 1,
-      dates: [null, null]
+    const matchingTransactions = await getTransactions({
+      limit: 1000,
+      accountId: transaction.account_id?.toString(),
+      categoryId: transaction.category_id?.toString(),
+      term: transaction.description
+    });
+
+    const newTransactions = matchingTransactions.map((trans: Transaction): Transaction => ({
+      id: trans.id,
+      description: trans.description,
+      amount: trans.amount,
+      date: trans.date,
+      account_id: trans.account_id,
+      category_id: trans.category_id,
+      excludeFromTotals: !transaction.excludeFromTotals
+    }))
+
+    updateTransactionBulk.mutate(newTransactions, {
+      onSuccess: async () => {
+        await queryClient.invalidateQueries();
+
+        setUpdater({ open: false, transaction: undefined });
+      }
     })
   }
 
@@ -125,74 +126,15 @@ export default function TransactionsRoute() {
           </Group>
         </Box>
 
-        <Card style={{ marginBottom: '1rem' }}>
-          <Group style={{ marginBottom: '1rem' }}>
-            <TextInput
-              type="search"
-              aria-label="Search"
-              placeholder="Search transactions"
-              variant="unstyled"
-              size="md"
-              value={filters.term}
-              onChange={(e) => setFilters((prev) => ({
-                ...prev,
-                term: e.target.value
-              }))}
-              icon={isLoading ? (<Loader size="xs" />) : (<MagnifyingGlassIcon />)}
-            />
-          </Group>
-          <Group position="apart">
-            <Group>
-              <DateRangePicker
-                aria-label="Pick dates range"
-                placeholder="Pick dates range"
-                color="green"
-                firstDayOfWeek="sunday"
-                value={filters.dates}
-                onChange={([start, end]) => setFilters((prev) => ({ ...prev, dates: [start, end]}))}
-              />
-
-              <Select
-                aria-label="Accounts"
-                placeholder="Accounts"
-                data={(accounts || []).map((acct) => ({ label: acct.name, value: acct.id.toString() }))}
-                value={filters.account}
-                onChange={(newId) => {
-                  //prompt
-                  if (newId) {
-                    setFilters((prev) => ({
-                      ...prev,
-                      account: newId
-                    }));
-                  }
-                }}
-              />
-              <Select
-                aria-label="Categories"
-                placeholder="Categories"
-                data={[...(categories || []), uncategorizedCategory].map((cat) => ({ label: cat.name, value: cat.id.toString() }))}
-                value={filters.category}
-                onChange={(newId) => {
-                  //prompt
-                  if (newId) {
-                    setFilters((prev) => ({
-                      ...prev,
-                      category: newId
-                    }));
-                  }
-                }}
-              />
-              <Text>Showing {(count ?? 0) > 50 ? 50 : count} of {count}</Text>
-            </Group>
-            <Group>
-              <Button variant="light" color="green" onClick={() => {
-                resetFilters();
-              }}>
-                Clear
-              </Button>
-            </Group>
-          </Group>
-        </Card>
+        <TransactionFilters
+          accounts={accounts ?? []}
+          categories={categories ?? []}
+          filters={filters}
+          loading={loading}
+          count={count ?? 0}
+          setFilters={setFilters}
+          resetFilters={resetFilters}
+        />
 
         <Box style={{ overflowX: 'auto' }}>
           <EditableTable<Transaction>
@@ -202,6 +144,7 @@ export default function TransactionsRoute() {
               { label: 'Category', key: 'category', sortable: false },
               { label: 'Amount', key: 'amount', sortable: true, sortFn: setSort },
               { label: 'Date', key: 'date', sortable: true, sortFn: setSort },
+              { label: '', key: 'id', sortable: false }
             ]}
             data={transactions ?? []}
             paginateProps={{
@@ -209,7 +152,7 @@ export default function TransactionsRoute() {
               onPaginate: (page: number) => setFilters((prev) => ({ ...prev, page }))
             }}
             renderRow={({ category, account, ...transaction }) => (
-              <tr key={transaction.id}>
+              <tr key={transaction.id} data-id={transaction.id}>
                 <td>{transaction.description}</td>
                 <td>{account?.name}</td>
                 <td>
@@ -219,12 +162,45 @@ export default function TransactionsRoute() {
                     categories={categories}
                   />
                 </td>
-                <td>{formatCurrency(transaction.amount)}</td>
+                <td><Text color={transaction.excludeFromTotals ? 'red' : ''}>{formatCurrency(transaction.amount)}</Text></td>
                 <td>{transaction.date}</td>
+                <td>
+                  <Menu>
+                    <Menu.Label>Options</Menu.Label>
+                    <Menu.Item icon={<GearIcon />}>Edit</Menu.Item>
+                    <Menu.Item icon={<Cross1Icon />} onClick={() => setUpdater({ open: true, transaction: transaction })}>
+                      {transaction.excludeFromTotals ? 'Include in Totals' : 'Exclude From Totals'}
+                    </Menu.Item>
+                    <Divider />
+                    <Menu.Label>Danger Zone</Menu.Label>
+                    <Menu.Item color="red" icon={<TrashIcon />} onClick={() => {
+                      deleteTransaction.mutate(transaction);
+                    }}>Delete</Menu.Item>
+                  </Menu>
+                </td>
               </tr>
             )}
           />
         </Box>
+
+        {/* exclude from totals */}
+        <Modal
+          centered
+          opened={updater.open}
+          onClose={() => setUpdater({ open: false, transaction: undefined })}
+          title="Update Transactions"
+        >
+          <Text>Apply rule to all matching transactions?</Text>
+
+          <Group position="apart" style={{ marginTop: '1rem' }}>
+            <Button color="green" variant="light" size="xs" onClick={() => updateAllTransactions()} loading={updateTransactionBulk.isLoading}>
+              Update All
+            </Button>
+            <Button color="green" variant="subtle" size="xs" onClick={() => updateSingleTransaction()}>
+              Just this one!
+            </Button>
+          </Group>
+        </Modal>
       </Container>
     </>
   )

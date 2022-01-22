@@ -36,13 +36,14 @@ export function useFilteredTransactions({
   return useQuery<Transaction[], PostgrestError, Transaction[]>(
     queryKeys('transactions', { ...sort, ...filters }),
     () => getTransactions({
-      limit: 50,
+      limit: filters.limit ?? 50,
       sort,
       categoryId: filters.category,
       accountId: filters.account,
       page: filters.page,
       term: filters.term.trimEnd(),
-      dates: filters.dates
+      dates: filters.dates,
+      excludeFromTotals: filters.excludeFromTotals
     }),
   )
 }
@@ -61,7 +62,8 @@ export function useFilteredTransactionsCount({
       accountId: filters.account,
       page: filters.page,
       term: filters.term.trimEnd(),
-      dates: filters.dates
+      dates: filters.dates,
+      excludeFromTotals: filters.excludeFromTotals
     })
   )
 }
@@ -85,7 +87,7 @@ export function useUpdateTransaction() {
     (transaction: Transaction | UnSavedRow<Transaction>) => createTransaction({ ...transaction }),
     {
       onSuccess: async (data) => {
-        await client.invalidateQueries(['get-transactions', 'get-transactions', data?.uid])
+        await client.invalidateQueries(['get-transactions', ['get-transaction', data?.uid]])
       }
     }
   );
@@ -96,5 +98,9 @@ export function useCreateTransactionBulk() {
 }
 
 export function useDeleteTransaction() {
-  return useMutation(async (id: number) => await deleteTransaction(id))
+  return useMutation(async (transaction: Transaction) => await deleteTransaction(transaction), {
+    onSuccess: async (data: Transaction | null) => {
+      await client.invalidateQueries();
+    }
+  })
 }

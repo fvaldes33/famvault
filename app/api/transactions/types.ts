@@ -8,10 +8,11 @@ export type Transaction = {
   category_id?: string | number | null;
   date: string;
   description: string;
-  id?: number;
+  id: number;
   uid?: string;
   account?: Account;
   category?: Category;
+  excludeFromTotals: boolean;
 }
 
 export type TransactionsRequestParams = {
@@ -22,6 +23,7 @@ export type TransactionsRequestParams = {
   term?: string;
   page?: number;
   dates?: [Date | null, Date | null];
+  excludeFromTotals?: boolean;
 }
 
 export type TransactionQueryKeys = {
@@ -39,5 +41,7 @@ export type TransactionFilters = {
   account: string | undefined;
   term: string;
   page: number;
-  dates?: [Date | null, Date | null]
+  dates?: [Date | null, Date | null];
+  excludeFromTotals?: boolean;
+  limit?: number;
 }

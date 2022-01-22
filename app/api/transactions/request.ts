@@ -2,7 +2,7 @@ import { UnSavedRow } from "~/types";
 import { supabase } from "~/utils/supabase";
 import { Transaction, TransactionsRequestParams } from "./types";
 
-export const getTransactions = async ({ accountId, categoryId, limit = 50, sort, term, page, dates }: TransactionsRequestParams = {}): Promise<Transaction[]> => {
+export const getTransactions = async ({ accountId, categoryId, limit = 50, sort, term, page, dates, excludeFromTotals }: TransactionsRequestParams = {}): Promise<Transaction[]> => {
   const query = supabase
     .from<Transaction>('transactions')
     .select('*, account:accounts(*), category:categories(*)');
@@ -16,7 +16,7 @@ export const getTransactions = async ({ accountId, categoryId, limit = 50, sort,
     }
   }
 
-  if (term) query.textSearch('description', `${term.replace(' ', ' | ')}`)
+  if (term) query.textSearch('description', `'${term}'`)
 
   if (page !== undefined) {
     const range = {
@@ -35,6 +35,10 @@ export const getTransactions = async ({ accountId, categoryId, limit = 50, sort,
     }
   }
 
+  if (excludeFromTotals !== undefined) {
+    query.eq('excludeFromTotals', excludeFromTotals);
+  }
+
   if (sort) query.order(sort.column, { ascending: sort.ascending })
 
   const { data, error } = await query;
@@ -44,7 +48,7 @@ export const getTransactions = async ({ accountId, categoryId, limit = 50, sort,
   return data ?? [];
 }
 
-export const getTransactionsCount = async ({ accountId, categoryId, term, dates }: TransactionsRequestParams = {}): Promise<number> => {
+export const getTransactionsCount = async ({ accountId, categoryId, term, dates, excludeFromTotals }: TransactionsRequestParams = {}): Promise<number> => {
   const query = supabase
     .from<Transaction>('transactions')
     .select('*', { count: 'exact', head: true });
@@ -58,7 +62,7 @@ export const getTransactionsCount = async ({ accountId, categoryId, term, dates 
     }
   }
 
-  if (term) query.textSearch('description', `${term.replace(' ', ' | ')}`)
+  if (term) query.textSearch('description', `'${term}'`)
 
   if (dates && dates.length) {
     if (dates[0]) {
@@ -67,6 +71,10 @@ export const getTransactionsCount = async ({ accountId, categoryId, term, dates 
     if (dates[1]) {
       query.lte('date', dates[1].toLocaleDateString());
     }
+  }
+
+  if (excludeFromTotals !== undefined) {
+    query.eq('excludeFromTotals', excludeFromTotals);
   }
 
   const { count, error } = await query;
@@ -112,13 +120,14 @@ export const createTransactionBulk = async (transactions: UnSavedRow<Transaction
   return data;
 }
 
-export const deleteTransaction = async (id: number): Promise<boolean> => {
-  const { error } = await supabase
+export const deleteTransaction = async (transaction: Transaction): Promise<Transaction | null> => {
+  const { data, error } = await supabase
     .from<Transaction>('transactions')
     .delete()
-    .match({ id });
+    .match({ id: transaction.id })
+    .single();
 
   if (error) throw error;
 
-  return true;
+  return data;
 }
