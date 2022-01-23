@@ -3,6 +3,7 @@ import { MetaFunction, LoaderFunction } from "remix";
 import { json } from "remix";
 import { useFamily } from "~/api/families";
 import { AccountForm } from "~/components/AccountForm";
+import { TransactionForm } from "~/components/TransactionForm";
 
 // Loaders provide data to components and are only ever called on the server, so
 // you can connect to a database or run any server side code you want right next
@@ -21,25 +22,22 @@ export let meta: MetaFunction = () => {
 };
 
 // https://remix.run/guides/routing#index-routes
-export default function AccountsNewRoute() {
-  const { data: family } = useFamily();
+export default function TransactionsNewRoute() {
 
   return (
     <Container size="sm">
       <Box sx={(theme) => ({
         padding: '40px 0',
       })}>
-        <Box>
-          <Title sx={(theme) => ({
-            fontSize: '40px',
-            [`@media (min-width: ${theme.breakpoints.sm}px)`]: {
-              fontSize: '60px',
-            },
-          })}>New Account</Title>
-        </Box>
-        <Box>
-          {family && <AccountForm family={family} />}
-        </Box>
+        <Title sx={(theme) => ({
+          fontSize: '40px',
+          [`@media (min-width: ${theme.breakpoints.sm}px)`]: {
+            fontSize: '60px',
+          },
+        })}>New Transaction</Title>
+      </Box>
+      <Box>
+        <TransactionForm />
       </Box>
     </Container>
   )

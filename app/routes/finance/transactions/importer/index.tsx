@@ -210,7 +210,8 @@ export default function ImporterRoute() {
         description: row.description ?? "[Missing]",
         date: row.date,
         account_id: accountId,
-        category_id: categoryId ?? null
+        category_id: categoryId ?? null,
+        excludeFromTotals: false
       }
     });
 

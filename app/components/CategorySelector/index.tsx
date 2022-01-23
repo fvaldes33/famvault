@@ -34,7 +34,8 @@ export function CategorySelector({ categories, category, transaction }: Category
       amount: trans.amount,
       date: trans.date,
       account_id: trans.account_id,
-      category_id: newCategory.id
+      category_id: newCategory.id,
+      excludeFromTotals: trans.excludeFromTotals
     }))
 
     updateTransactionBulk.mutate(newTransactions, {
@@ -70,18 +71,14 @@ export function CategorySelector({ categories, category, transaction }: Category
     <>
       <Select
         aria-label="Category"
+        searchable
         data={(categories || []).map((cat) => ({ label: cat.name, value: cat.id.toString() }))}
         value={category?.id.toString()}
         onChange={(newId) => {
           //prompt
-          console.log('newid', newId)
           if (newId) {
             setNewCategory(categories?.find(c => c.id === +newId))
             setOpened(true);
-            // updateTransaction.mutate({
-            //   ...transaction,
-            //   category_id: +newId
-            // })
           }
         }}
       />
@@ -91,7 +88,7 @@ export function CategorySelector({ categories, category, transaction }: Category
         onClose={() => setOpened(false)}
         title="Update Transactions"
       >
-        <Text>Update all transactions matching "{transaction.description}" to "{newCategory?.name}"?</Text>
+        <Text>Apply rule to all matching transactions?</Text>
 
         <Group position="apart" style={{ marginTop: '1rem' }}>
           <Button color="green" variant="light" size="xs" onClick={() => updateAllTransactions()} loading={updateTransactionBulk.isLoading}>

@@ -73,7 +73,7 @@ export function useTransaction(uid: string) {
     ['get-transaction', uid],
     () => getTransaction(uid),
     {
-      enabled: false
+      enabled: !!uid
     }
   )
 }

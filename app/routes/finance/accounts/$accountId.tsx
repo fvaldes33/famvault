@@ -118,11 +118,31 @@ export default function AccountDetailRoute() {
               { label: 'Date', key: 'date', sortable: true, sortFn: setSort },
             ]}
             data={transactions ?? []}
-            renderRow={({ id, category, date, description, amount }) => (
+            renderRow={({ id, category, date, description, excludeFromTotals, amount, uid }) => (
               <tr key={id}>
-                <td>{description}</td>
+                <td>
+                  <Text component={Link} to={`/finance/transactions/${uid}`} sx={{
+                    position: 'relative',
+                    '--opacity': 0.25,
+                    '&:hover': {
+                      '--opacity': 0.45
+                    }
+                  }}>
+                    {description}
+                    <Box component="span" sx={(theme) => ({
+                      height: '8px',
+                      position: 'absolute',
+                      bottom: 0,
+                      width: '100%',
+                      background: theme.colors.green[3],
+                      opacity: 'var(--opacity)',
+                      left: 0,
+                      transition: 'all 0.3s ease-in-out'
+                    })}/>
+                  </Text>
+                </td>
                 <td>{category?.name}</td>
-                <td>{formatCurrency(amount)}</td>
+                <td><Text color={excludeFromTotals ? 'red' : ''}>{formatCurrency(amount)}</Text></td>
                 <td>{date}</td>
               </tr>
             )}

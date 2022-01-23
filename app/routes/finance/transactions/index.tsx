@@ -120,6 +120,9 @@ export default function TransactionsRoute() {
         })}>
           <Title order={5} style={{ textTransform: 'uppercase', letterSpacing: '1.5px' }}>All Transactions</Title>
           <Group>
+            <Button component={Link} to="/finance/transactions/new" color="green">
+              New
+            </Button>
             <Button component={Link} to="/finance/transactions/importer" color="green">
               Import
             </Button>
@@ -153,7 +156,27 @@ export default function TransactionsRoute() {
             }}
             renderRow={({ category, account, ...transaction }) => (
               <tr key={transaction.id} data-id={transaction.id}>
-                <td>{transaction.description}</td>
+                <td>
+                  <Text component={Link} to={`/finance/transactions/${transaction.uid}`} sx={{
+                    position: 'relative',
+                    '--opacity': 0.25,
+                    '&:hover': {
+                      '--opacity': 0.45
+                    }
+                  }}>
+                    {transaction.description}
+                    <Box component="span" sx={(theme) => ({
+                      height: '8px',
+                      position: 'absolute',
+                      bottom: 0,
+                      width: '100%',
+                      background: theme.colors.green[3],
+                      opacity: 'var(--opacity)',
+                      left: 0,
+                      transition: 'all 0.3s ease-in-out'
+                    })} />
+                  </Text>
+                </td>
                 <td>{account?.name}</td>
                 <td>
                   <CategorySelector

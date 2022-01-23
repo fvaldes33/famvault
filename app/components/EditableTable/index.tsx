@@ -22,7 +22,7 @@ export type SortState<T> = {
   [K in keyof T]: boolean;
 }
 
-export function EditableTable<T>({ headers, data, renderRow, paginateProps }: EditableTableProps<T>) {
+export function EditableTable<T extends { id: any }>({ headers, data, renderRow, paginateProps }: EditableTableProps<T>) {
   const [sorted, setSorted] = useState(() => {
     return headers.reduce((map, header) => {
       return {
@@ -38,7 +38,7 @@ export function EditableTable<T>({ headers, data, renderRow, paginateProps }: Ed
         <thead>
           <tr>
             {headers.map(({ label, key, sortable, sortFn }) => (
-              <th style={{ verticalAlign: 'middle' }}>
+              <th key={label} style={{ verticalAlign: 'middle' }}>
                 <span>{label}</span>
                 {sortable && (
                   <ActionIcon onClick={() => {

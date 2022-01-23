@@ -16,24 +16,6 @@ const useStyles = createStyles(theme => ({
     justifyContent: 'center',
     width: '100%',
   },
-  logo: {
-    alignItems: 'center',
-    display: 'flex',
-    justifyContent: 'center',
-    margin: '2rem 0'
-  },
-  icon: {
-    alignItems: 'center',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    height: 64,
-    width: 64,
-    borderRadius: 999,
-    border: `5px solid ${theme.colors.green[2]}`,
-    color: theme.colors.dark[4],
-    margin: '0 0.5rem'
-  },
   form: {
     display: 'flex',
     flexDirection: 'column',

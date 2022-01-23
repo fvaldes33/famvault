@@ -27,7 +27,7 @@ export type TransactionImportMapKeys = {
   date: string;
 }
 
-export type UnSavedRow<T> = Omit<T, 'id'>;
+export type UnSavedRow<T> = Omit<T, 'id'> & { id?: number };
 
 export type Profile = {
   id: string;

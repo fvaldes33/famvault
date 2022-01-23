@@ -27,7 +27,7 @@ export default function TransactionFilterComponent({
 }: TransactionFiltersProps) {
 
   return (
-    <Card style={{ marginBottom: '1rem' }}>
+    <Card style={{ marginBottom: '1rem', position: 'sticky', top: 80, zIndex: 1 }}>
       <Group style={{ marginBottom: '1rem' }}>
         <TextInput
           type="search"
