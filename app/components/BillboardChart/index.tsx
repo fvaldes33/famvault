@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react"
-import bb, { bar, donut, pie, line,Chart, ChartOptions, ChartTypes } from "billboard.js";
+import bb, { bar, donut, pie, line, spline, Chart, ChartOptions, ChartTypes } from "billboard.js";
 
 export type BillboardChartProps = {
   options: ChartOptions;
@@ -10,6 +10,7 @@ const TypeMap = new Map<string, () => ChartTypes>([
   ['donut', donut],
   ['pie', pie],
   ['line', line],
+  ['spline', spline],
 ]);
 
 export default function BillboardChart({ options }: BillboardChartProps) {
@@ -23,7 +24,7 @@ export default function BillboardChart({ options }: BillboardChartProps) {
 
     if (!chartRef.current) {
       const { data, ...rest } = options;
-      const { type = 'bar' } = data ?? {};
+      const { type = 'bar', types = {} } = data ?? {};
       let fn = TypeMap.get(type);
       if (!fn) {
         fn = bar;
@@ -33,7 +34,10 @@ export default function BillboardChart({ options }: BillboardChartProps) {
         ...rest,
         data: {
           ...data,
-          type: fn()
+          type: fn(),
+          // types: {
+          //   cashflow: spline(),
+          // }
         },
         bindto: chartElRef.current
       })

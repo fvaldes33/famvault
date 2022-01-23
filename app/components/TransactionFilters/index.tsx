@@ -1,6 +1,7 @@
 import { Box, Button, Text, TextInput, Card, Container, Group, Select, Title, Loader } from "@mantine/core";
 import { DateRangePicker } from '@mantine/dates';
 import { MagnifyingGlassIcon } from "@modulz/radix-icons";
+import { useMemo } from "react";
 import { Account } from "~/api/accounts";
 import { Category } from "~/api/categories";
 import { TransactionFilters } from "~/api/transactions";
@@ -12,6 +13,8 @@ export type TransactionFiltersProps = {
   filters: TransactionFilters;
   loading: boolean;
   count: number;
+  showSearch?: boolean;
+  showCount?: boolean;
   setFilters: React.Dispatch<React.SetStateAction<TransactionFilters>>;
   resetFilters: () => void;
 }
@@ -22,27 +25,48 @@ export default function TransactionFilterComponent({
   filters,
   loading,
   count,
+  showSearch = true,
+  showCount = true,
   setFilters,
   resetFilters,
 }: TransactionFiltersProps) {
 
+  const { from, to } = useMemo(
+    () => {
+      if (!count) {
+        return {
+          from: 0,
+          to: 0
+        }
+      }
+
+      return {
+        from: filters.page == 1 ? 1 : (filters.page - 1) * (filters.limit ?? 50),
+        to: filters.page === 1 ? Math.min(count, (filters.limit ?? 50)) : filters.page * (filters.limit ?? 50)
+      }
+    },
+    [filters.limit, filters.page, count]
+  );
+
   return (
     <Card style={{ marginBottom: '1rem', position: 'sticky', top: 80, zIndex: 1 }}>
-      <Group style={{ marginBottom: '1rem' }}>
-        <TextInput
-          type="search"
-          aria-label="Search"
-          placeholder="Search transactions"
-          variant="unstyled"
-          size="md"
-          value={filters.term}
-          onChange={(e) => setFilters((prev) => ({
-            ...prev,
-            term: e.target.value
-          }))}
-          icon={loading ? (<Loader size="xs" />) : (<MagnifyingGlassIcon />)}
-        />
-      </Group>
+      {showSearch && (
+        <Group style={{ marginBottom: '1rem' }}>
+          <TextInput
+            type="search"
+            aria-label="Search"
+            placeholder="Search transactions"
+            variant="unstyled"
+            size="md"
+            value={filters.term}
+            onChange={(e) => setFilters((prev) => ({
+              ...prev,
+              term: e.target.value
+            }))}
+            icon={loading ? (<Loader size="xs" />) : (<MagnifyingGlassIcon />)}
+          />
+        </Group>
+      )}
       <Group position="apart">
         <Group>
           <DateRangePicker
@@ -84,7 +108,9 @@ export default function TransactionFilterComponent({
               }
             }}
           />
-          <Text>Showing {(count ?? 0) > 50 ? 50 : count} of {count}</Text>
+          {showCount && (
+            <Text>Showing {from} - {to} of {count}</Text>
+          )}
         </Group>
         <Group>
           <Button variant="light" color="green" onClick={() => {
